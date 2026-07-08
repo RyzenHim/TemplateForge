@@ -19,7 +19,7 @@ export default function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 cursor-pointer ${variants[variant]} ${className}`}
+      className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 cursor-pointer ${variants[variant]} ${className} disabled:cursor-not-allowed disabled:opacity-50`}
       {...props}
     >
       {children}

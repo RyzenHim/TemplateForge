@@ -4,9 +4,18 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <h1>This is the layout of auth</h1>
-      {children}
-    </div>
+    <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4 dark:bg-zinc-950">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-indigo-600">TemplateForge</h1>
+
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Build • Customize • Launch
+          </p>
+        </div>
+
+        {children}
+      </div>
+    </main>
   );
 }

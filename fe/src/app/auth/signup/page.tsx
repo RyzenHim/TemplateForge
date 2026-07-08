@@ -5,6 +5,8 @@ import Input from "@/app/components/ui/Input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Card from "@/app/components/ui/Card";
+import Link from "next/link";
 // interface SignupData {
 //   firstName: string;
 //   lastName: string;
@@ -51,51 +53,57 @@ export default function SignupPage() {
   }
   return (
     <div>
-      <h1>This is the signup page</h1>
+      <h1>signup</h1>
+      <Card>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Input
+            type="text"
+            label="First Name"
+            placeholder="Enter your first name"
+            id="firstName"
+            {...register("firstName")}
+            error={errors.firstName?.message}
+          />
+          <Input
+            type="text"
+            label="Last Name"
+            placeholder="Enter your last name"
+            id="lastName"
+            {...register("lastName")}
+            error={errors.lastName?.message}
+          />
+          <Input
+            type="email"
+            label="Email Id"
+            placeholder="Enter your email id"
+            id="email"
+            {...register("email")}
+            error={errors.email?.message}
+          />
+          <Input
+            type="password"
+            label="Password"
+            placeholder="Enter password"
+            id="password"
+            {...register("password")}
+            error={errors.password?.message}
+          />
+          <Input
+            type="password"
+            label="Confirm Password"
+            placeholder="Enter confirm password"
+            id="confirmPassword"
+            {...register("confirmPassword")}
+            error={errors.confirmPassword?.message}
+          />
+          <Button type="submit">Signup</Button>
+        </form>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          type="text"
-          label="First Name"
-          placeholder="Enter your first name"
-          id="firstName"
-          {...register("firstName")}
-          error={errors.firstName?.message}
-        />
-        <Input
-          type="text"
-          label="Last Name"
-          placeholder="Enter your last name"
-          id="lastName"
-          {...register("lastName")}
-          error={errors.lastName?.message}
-        />
-        <Input
-          type="email"
-          label="Email Id"
-          placeholder="Enter your email id"
-          id="email"
-          {...register("email")}
-          error={errors.email?.message}
-        />
-        <Input
-          type="password"
-          label="Password"
-          placeholder="Enter password"
-          id="password"
-          {...register("password")}
-          error={errors.password?.message}
-        />
-        <Input
-          type="password"
-          label="Confirm Password"
-          placeholder="Enter confirm password"
-          id="confirmPassword"
-          {...register("confirmPassword")}
-          error={errors.confirmPassword?.message}
-        />
-        <Button type="submit">Signup</Button>
-      </form>
+        <div>
+          <h1>Already have and account?</h1>
+          <Link href={"/auth/login"}>Login here</Link>
+        </div>
+      </Card>
     </div>
   );
 }

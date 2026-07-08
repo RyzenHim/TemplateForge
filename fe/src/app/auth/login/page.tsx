@@ -4,6 +4,8 @@ import Input from "@/app/components/ui/Input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Card from "@/app/components/ui/Card";
+import Link from "next/link";
 
 // interface LoginFormData {
 //   email: string;
@@ -38,25 +40,32 @@ export default function LoginPage() {
   console.log("error", errors);
   return (
     <div className="border m-2 p-2 rounded-2xl">
-      <h1>This is the login page</h1>
+      <h1>Login</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          error={errors.email?.message}
-          label="Email"
-          id="email"
-          type="email"
-          {...register("email")}
-        />
-        <Input
-          error={errors.password?.message}
-          label="Password"
-          id="password"
-          type="password"
-          {...register("password")}
-        />
-        <Button type="submit">Login</Button>
-      </form>
+      <Card>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Input
+            error={errors.email?.message}
+            label="Email"
+            id="email"
+            type="email"
+            {...register("email")}
+          />
+          <Input
+            error={errors.password?.message}
+            label="Password"
+            id="password"
+            type="password"
+            {...register("password")}
+          />
+          <Button type="submit">Login</Button>
+        </form>
+      </Card>
+
+      <div>
+        <h1>Dont have a account ?</h1>
+        <Link href={"/auth/signup"}>Signup</Link>
+      </div>
     </div>
   );
 }

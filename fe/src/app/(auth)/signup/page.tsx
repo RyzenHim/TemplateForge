@@ -101,7 +101,7 @@ export default function SignupPage() {
 
         <div>
           <h1>Already have and account?</h1>
-          <Link href={"/auth/login"}>Login here</Link>
+          <Link href={"/login"}>Login here</Link>
         </div>
       </Card>
     </div>

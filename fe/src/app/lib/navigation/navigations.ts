@@ -51,3 +51,14 @@ export const profileItems: NavigationItems[] = [
     href: "/dashboard/profile/security",
   },
 ];
+
+export const SettingItems: NavigationItems[] = [
+  {
+    label: "Profile",
+    href: "/dashboard/profile",
+  },
+  {
+    label: "Security",
+    href: "/dashboard/profile/security",
+  },
+];

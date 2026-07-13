@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-
+import QueryProvider from "./providers/QueryProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,21 +28,23 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <QueryProvider>{children}</QueryProvider>
 
-      <Script
-        src="https://widget.connect.beta.orufy.in/widget.js"
-        strategy="afterInteractive"
-      />
+        <Script
+          src="https://widget.connect.beta.orufy.in/widget.js"
+          strategy="afterInteractive"
+        />
 
-      <Script id="orufy-init" strategy="afterInteractive">
-        {`
-          window.orufy_connect = window.orufy_connect || {};
-          window.orufy_connect._globals = {
-            appId: "0410b1ORwmG2zAvteLT7rGaa4dKToV20"
-          };
-        `}
-      </Script>
+        <Script id="orufy-init" strategy="afterInteractive">
+          {`
+        window.orufy_connect = window.orufy_connect || {};
+        window.orufy_connect._globals = {
+          appId: "0410b1ORwmG2zAvteLT7rGaa4dKToV20"
+        };
+      `}
+        </Script>
+      </body>
     </html>
   );
 }

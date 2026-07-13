@@ -13,7 +13,7 @@ import Link from "next/link";
 // }
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
+  email: z.email("Please enter a valid email"),
   password: z.string().min(8, "Password must contain at least 8 characters"),
 });
 //this says read the schema and generate the typescript from it
@@ -29,13 +29,13 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     mode: "onBlur",
   });
-  console.log("hey", loginSchema);
-  console.log("error", errors);
+  // console.log("hey", loginSchema);
+  // console.log("error", errors);
 
   //   console.log(register("email"));
 
   function onSubmit(data: LoginFormData) {
-    console.log(data);
+    // console.log(data);
   }
   console.log("error", errors);
   return (

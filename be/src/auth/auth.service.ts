@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -16,30 +17,40 @@ export class AuthService {
   ) {}
 
   async signup(signUpDto: SignUpDto) {
+    console.log('signup started');
     const existingUser = await this.usersService.findByEmail(signUpDto.email);
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
-
+    if (signUpDto.password !== signUpDto.confirmPassword) {
+      throw new BadRequestException('Password do not match');
+    }
+    // console.log('signUpDto', signUpDto);
+    // console.log("signUpDto",signUpDto)
     const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
     const userData = {
       ...signUpDto,
       password: hashedPassword,
     };
     const user = await this.usersService.create(userData);
+    console.log('Signup done');
 
     return {
       message: 'User created successfully',
       user: {
         id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
       },
     };
   }
 
   async login(loginDto: LoginDto) {
+    console.log('Login came till here');
+
     const existingUser = await this.usersService.findByEmail(loginDto.email);
+
     if (!existingUser) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -47,6 +58,8 @@ export class AuthService {
       loginDto.password,
       existingUser.password,
     );
+    console.log(!!isPasswordValid);
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -55,13 +68,13 @@ export class AuthService {
       email: existingUser.email,
     };
     const accessToken = await this.jwtService.signAsync(payload);
-
     return {
       message: 'Login successful',
       accessToken,
       user: {
         id: existingUser._id,
-        name: existingUser.name,
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
         email: existingUser.email,
       },
     };

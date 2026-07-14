@@ -6,7 +6,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Card from "@/app/components/ui/Card";
 import Link from "next/link";
-
+import { useLogin } from "@/app/lib/hooks/useLogin";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import axios from "axios";
 // interface LoginFormData {
 //   email: string;
 //   password: string;
@@ -14,13 +17,15 @@ import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.email("Please enter a valid email"),
-  password: z.string().min(8, "Password must contain at least 8 characters"),
+  password: z.string().min(6, "Password must contain at least 8 characters"),
 });
 //this says read the schema and generate the typescript from it
 //this is crewating the interface for the data from the form
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -33,10 +38,31 @@ export default function LoginPage() {
   // console.log("error", errors);
 
   //   console.log(register("email"));
+  const { mutate, isPending, isSuccess, isError, error, data, reset } =
+    useLogin();
 
   function onSubmit(data: LoginFormData) {
-    // console.log(data);
+    mutate(data, {
+      onSuccess(response) {
+        localStorage.setItem("token", response.accessToken);
+        toast.success(response.message);
+        console.log("Token stored successfully");
+        router.push("/dashboard");
+      },
+      onError(error) {
+        console.log(error);
+
+        if (axios.isAxiosError(error)) {
+          console.log(error.response);
+          console.log(error.response?.data);
+          console.log(error.response?.data?.message);
+
+          toast.error(error.response?.data?.message);
+        }
+      },
+    });
   }
+
   console.log("error", errors);
   return (
     <div className="rounded-2xl bg-white/70 p-1 shadow-sm ring-1 ring-zinc-200/60 backdrop-blur dark:bg-zinc-900/40 dark:ring-zinc-800">
@@ -68,8 +94,8 @@ export default function LoginPage() {
             />
 
             <div className="pt-2">
-              <Button type="submit" className="w-full">
-                Login
+              <Button disabled={isPending} type="submit" className="w-full">
+                {isPending ? "Logging in..." : "Login"}
               </Button>
             </div>
           </form>

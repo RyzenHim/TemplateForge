@@ -7,6 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Card from "@/app/components/ui/Card";
 import Link from "next/link";
+import { useSignup } from "@/app/lib/hooks/useSignup";
 // interface SignupData {
 //   firstName: string;
 //   lastName: string;
@@ -15,6 +16,7 @@ import Link from "next/link";
 //   confirmPassword: string;
 // }
 
+//purpose:runtime form validation
 const signupSchema = z
   .object({
     firstName: z
@@ -36,6 +38,7 @@ const signupSchema = z
     path: ["confirmPassword"],
   });
 
+//
 type SignupData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
@@ -48,8 +51,11 @@ export default function SignupPage() {
     mode: "onBlur",
   });
 
+  const signupMutation = useSignup();
+
   function onSubmit(data: SignupData) {
-    console.log(data);
+    signupMutation.mutate(data);
+    // console.log(data);
   }
   return (
     <div className="rounded-2xl bg-white/70 p-1 shadow-sm ring-1 ring-zinc-200/60 backdrop-blur dark:bg-zinc-900/40 dark:ring-zinc-800">

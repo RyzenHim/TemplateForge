@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Input from "../ui/Input";
 import UserMenuDropDown from "./UserMenuDropDown";
-import { SidebarProps } from "@/app/lib/types";
+import { SidebarProps } from "@/app/lib/types/types";
 export default function Sidebar({ menuOptions }: SidebarProps) {
   return (
     <div className="w-50 border h-screen  p-4">

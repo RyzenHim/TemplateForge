@@ -10,3 +10,7 @@ export async function signup(data: SignupRequest) {
   const response = await api.post("/auth/signup", data);
   return response.data;
 }
+
+export function logout() {
+  localStorage.removeItem("token");
+}

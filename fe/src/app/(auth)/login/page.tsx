@@ -8,8 +8,7 @@ import Card from "@/app/components/ui/Card";
 import Link from "next/link";
 import { useLogin } from "@/app/lib/hooks/useLogin";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import axios from "axios";
+import { showApiError, showApiSuccess } from "@/app/lib/utils";
 // interface LoginFormData {
 //   email: string;
 //   password: string;
@@ -45,20 +44,13 @@ export default function LoginPage() {
     mutate(data, {
       onSuccess(response) {
         localStorage.setItem("token", response.accessToken);
-        toast.success(response.message);
-        console.log("Token stored successfully");
+        showApiSuccess(response.message);
+        // toast.success(response.message);
+        // console.log("Token stored successfully");
         router.push("/dashboard");
       },
       onError(error) {
-        console.log(error);
-
-        if (axios.isAxiosError(error)) {
-          console.log(error.response);
-          console.log(error.response?.data);
-          console.log(error.response?.data?.message);
-
-          toast.error(error.response?.data?.message);
-        }
+        showApiError(error);
       },
     });
   }

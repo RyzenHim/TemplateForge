@@ -8,13 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Card from "@/app/components/ui/Card";
 import Link from "next/link";
 import { useSignup } from "@/app/lib/hooks/useSignup";
-// interface SignupData {
-//   firstName: string;
-//   lastName: string;
-//   email: string;
-//   password: string;
-//   confirmPassword: string;
-// }
+import { useRouter } from "next/navigation";
+import { showApiError, showApiSuccess } from "@/app/lib/utils";
 
 //purpose:runtime form validation
 const signupSchema = z
@@ -42,6 +37,8 @@ const signupSchema = z
 type SignupData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -51,12 +48,21 @@ export default function SignupPage() {
     mode: "onBlur",
   });
 
-  const signupMutation = useSignup();
-
+  const { mutate, isPending, isSuccess, isError, error, data, reset } =
+    useSignup();
   function onSubmit(data: SignupData) {
-    signupMutation.mutate(data);
-    // console.log(data);
+    mutate(data, {
+      onSuccess(response) {
+        showApiSuccess(response.message);
+        router.push("/login");
+      },
+
+      onError(error) {
+        showApiError(error);
+      },
+    });
   }
+
   return (
     <div className="rounded-2xl bg-white/70 p-1 shadow-sm ring-1 ring-zinc-200/60 backdrop-blur dark:bg-zinc-900/40 dark:ring-zinc-800">
       <div className="p-6">
@@ -113,8 +119,8 @@ export default function SignupPage() {
             />
 
             <div className="pt-2">
-              <Button type="submit" className="w-full">
-                Sign up
+              <Button disabled={isPending} type="submit" className="w-full">
+                {isPending ? "Creating Account..." : "Sign up"}
               </Button>
             </div>
           </form>

@@ -4,5 +4,5 @@ export interface NavigationItems {
 }
 
 export interface SidebarProps {
-  menuOptions: NavigationItems[];
+  menuOptions?: NavigationItems[];
 }

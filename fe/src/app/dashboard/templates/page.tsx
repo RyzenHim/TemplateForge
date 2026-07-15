@@ -1,7 +1,5 @@
+import Card from "@/app/components/ui/Card";
+
 export default function AppPage() {
-  return (
-    <div>
-      <h1>THIS IS THE PAGE WHERE TEMPLATES WILL BE SHOWN</h1>
-    </div>
-  );
+  return <div className=""> this is the template page </div>;
 }

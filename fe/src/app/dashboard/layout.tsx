@@ -5,8 +5,8 @@ export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div>
-      {/* <Sidebar /> */}
+    <div className="flex">
+      <Sidebar />
       <ProtectedRoute>{children}</ProtectedRoute>
     </div>
   );

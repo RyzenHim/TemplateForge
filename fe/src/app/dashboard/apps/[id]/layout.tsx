@@ -1,9 +1,11 @@
+"use client";
+
 import Sidebar from "@/app/components/layout/Sidebar";
-import Link from "next/link";
-export default function AppsLayout({
+
+export default function EditLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="flex">{children}</div>;
+  return <>{children}</>;
 }

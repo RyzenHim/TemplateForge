@@ -1,6 +1,6 @@
 import Sidebar from "@/app/components/layout/Sidebar";
 import { profileItems } from "@/app/lib/navigation/navigations";
-export function ProfileLayout({
+export default function ProfileLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (

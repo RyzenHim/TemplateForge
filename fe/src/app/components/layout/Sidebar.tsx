@@ -1,11 +1,19 @@
+"use client";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Input from "../ui/Input";
 import UserMenuDropDown from "./UserMenuDropDown";
 import { SidebarProps } from "@/app/lib/types/types";
 export default function Sidebar({ menuOptions }: SidebarProps) {
+  const router = useRouter();
   return (
     <div className="w-50 border h-screen  p-4">
-      <h1 className="font-black">TEMPLATEFORGE</h1>
+      <button
+        onClick={() => router.push("/dashboard/home")}
+        className="font-black  cursor-pointer"
+      >
+        TEMPLATEFORGE
+      </button>
       <UserMenuDropDown />
       <Input placeholder="Search" />
 

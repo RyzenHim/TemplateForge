@@ -1,13 +1,13 @@
+import ProtectedRoute from "../(auth)/protectedRoute/ProtectedRoute";
 import Sidebar from "../components/layout/Sidebar";
 
-export default function DashbaordLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div>
       {/* <Sidebar /> */}
-
-      {children}
+      <ProtectedRoute>{children}</ProtectedRoute>
     </div>
   );
 }

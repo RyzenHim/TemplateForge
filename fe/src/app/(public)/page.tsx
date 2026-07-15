@@ -17,13 +17,13 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button className="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white transition hover:bg-indigo-700">
+          {/* <button className="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white transition hover:bg-indigo-700">
             Explore Templates
           </button>
 
           <button className="rounded-lg border border-zinc-300 px-6 py-3 font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900">
             Learn More
-          </button>
+          </button> */}
         </div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-3">

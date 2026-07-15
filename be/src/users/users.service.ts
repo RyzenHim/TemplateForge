@@ -16,4 +16,8 @@ export class UsersService {
   async create(userData: SignUpDto) {
     return this.userModel.create(userData);
   }
+
+  async findById(id: string) {
+    return this.userModel.findById(id);
+  }
 }

@@ -47,7 +47,7 @@ export default function LoginPage() {
         showApiSuccess(response.message);
         // toast.success(response.message);
         // console.log("Token stored successfully");
-        router.push("/dashboard");
+        router.push("/dashboard/home");
       },
       onError(error) {
         showApiError(error);

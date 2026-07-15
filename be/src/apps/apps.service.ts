@@ -1,0 +1,100 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+
+import { App, AppDocument } from './schemas/app.schema';
+import { CreateAppDto } from './dto/create-app.dto';
+import { UpdateAppDto } from './dto/update-app.dto';
+
+@Injectable()
+export class AppsService {
+  constructor(
+    @InjectModel(App.name)
+    private readonly appModel: Model<AppDocument>,
+  ) {}
+
+  private mapApp(app: AppDocument) {
+    return {
+      id: app._id.toString(),
+      name: app.name,
+      description: app.description,
+      packageName: app.packageName,
+      icon: app.icon,
+      status: app.status,
+      owner: app.owner,
+      template: app.template,
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+    };
+  }
+
+  async create(createAppDto: CreateAppDto, userId: string) {
+    const app = await this.appModel.create({
+      ...createAppDto,
+      owner: new Types.ObjectId(userId),
+    });
+
+    return {
+      message: 'App created successfully',
+      app: this.mapApp(app),
+    };
+  }
+
+  async findAll(userId: string) {
+    const apps = await this.appModel.find({
+      owner: new Types.ObjectId(userId),
+    });
+
+    return apps.map((app) => this.mapApp(app));
+  }
+
+  async findOne(id: string, userId: string) {
+    const app = await this.appModel.findOne({
+      _id: id,
+      owner: new Types.ObjectId(userId),
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return this.mapApp(app);
+  }
+
+  async update(id: string, updateAppDto: UpdateAppDto, userId: string) {
+    const app = await this.appModel.findOneAndUpdate(
+      {
+        _id: id,
+        owner: new Types.ObjectId(userId),
+      },
+      updateAppDto,
+      {
+        new: true,
+      },
+    );
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return {
+      message: 'App updated successfully',
+      app: this.mapApp(app),
+    };
+  }
+
+  async remove(id: string, userId: string) {
+    const app = await this.appModel.findOneAndDelete({
+      _id: id,
+      owner: new Types.ObjectId(userId),
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return {
+      message: 'App deleted successfully',
+    };
+  }
+}

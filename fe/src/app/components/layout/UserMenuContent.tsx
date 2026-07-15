@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 export default function UserMenuContent() {
   const router = useRouter();
   const userMenus = [
-    { label: "My Apps", href: "/dashbaord/apps" },
+    { label: "My Apps", href: "/dashboard/apps" },
     { label: "My Profile", href: "/dashboard/profile" },
     { label: "Logout", action: "logout" },
   ];

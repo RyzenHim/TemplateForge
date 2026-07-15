@@ -13,18 +13,18 @@ export default function Navbar() {
         {/* Navigation */}
         <div className="hidden items-center gap-8 md:flex">
           <Link
-            href="/templates"
+            href="/dashboard/templates"
             className="text-zinc-700 hover:text-indigo-600 dark:text-zinc-300"
           >
             Templates
           </Link>
-
+          {/* 
           <Link
             href="/pricing"
             className="text-zinc-700 hover:text-indigo-600 dark:text-zinc-300"
           >
             Pricing
-          </Link>
+          </Link> */}
 
           <Link
             href="/about"

@@ -6,48 +6,14 @@ import {
   AppPermissions,
   AppSettings,
 } from 'src/common/schemas/app-configuration.schema';
-export type AppDocument = HydratedDocument<App>;
+
+export type TemplateDocument = HydratedDocument<Template>;
 
 @Schema({
   timestamps: true,
 })
-export class App {
+export class Template {
   _id!: Types.ObjectId;
-
-  @Prop({
-    required: true,
-    trim: true,
-  })
-  name!: string;
-
-  @Prop({
-    default: '',
-    trim: true,
-  })
-  description!: string;
-
-  @Prop({
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-  })
-  packageName!: string;
-
-  @Prop({
-    default: '1.0.0',
-  })
-  version!: string;
-
-  @Prop({
-    default: '',
-  })
-  websiteUrl!: string;
-
-  @Prop({
-    default: '',
-  })
-  icon!: string;
 
   @Prop({
     type: Types.ObjectId,
@@ -57,19 +23,49 @@ export class App {
   owner!: Types.ObjectId;
 
   @Prop({
-    type: Types.ObjectId,
-    ref: 'Template',
-    default: null,
+    required: true,
+    trim: true,
+    maxlength: 100,
   })
-  template!: Types.ObjectId | null;
+  name!: string;
 
   @Prop({
-    enum: ['draft', 'published', 'archived'],
-    default: 'draft',
+    default: '',
+    trim: true,
+    maxlength: 500,
   })
-  status!: string;
+  description!: string;
 
-  // Copied from template when app is created
+  @Prop({
+    enum: ['system', 'public', 'private'],
+    default: 'private',
+  })
+  visibility!: 'system' | 'public' | 'private';
+
+  @Prop({
+    default: '',
+    trim: true,
+  })
+  thumbnail!: string;
+
+  @Prop({
+    default: '',
+    trim: true,
+  })
+  category!: string;
+
+  @Prop({
+    type: [String],
+    default: [],
+  })
+  tags!: string[];
+
+  @Prop({
+    default: 0,
+    min: 0,
+  })
+  usageCount!: number;
+
   @Prop({
     type: Branding,
     required: true,
@@ -95,8 +91,7 @@ export class App {
   appSettings!: AppSettings;
 
   createdAt!: Date;
-
   updatedAt!: Date;
 }
 
-export const AppSchema = SchemaFactory.createForClass(App);
+export const TemplateSchema = SchemaFactory.createForClass(Template);

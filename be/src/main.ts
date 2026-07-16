@@ -11,6 +11,6 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 8080);
   app.useGlobalPipes(new ValidationPipe());
   // console.log('app>>>>>>>>>>>>', app);
-  console.log('port', process.env.PORT);
+  console.log('server using port', process.env.PORT);
 }
 bootstrap();

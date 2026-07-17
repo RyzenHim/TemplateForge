@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import {
   app_sideBar_options,
   general_sideBar_options,
-  tempaltes_sideBar_options,
+  templates_sideBar_options,
 } from "@/app/lib/navigation/navigations";
 
 export default function Sidebar() {
@@ -23,7 +23,7 @@ export default function Sidebar() {
   }
 
   if (pathname.startsWith("/dashboard/templates/")) {
-    menuOptions = tempaltes_sideBar_options;
+    menuOptions = templates_sideBar_options;
   }
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-black">

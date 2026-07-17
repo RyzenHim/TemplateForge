@@ -25,42 +25,64 @@ export const general_sideBar_options: NavigationItems[] = [
     href: "/dashboard/public_templates",
   },
 ];
-
 export const app_sideBar_options: NavigationItems[] = [
   {
-    label: "App Info",
+    label: "Basic Information",
     href: "/dashboard/apps/app-info",
+  },
+  {
+    label: "Branding",
+    href: "/dashboard/apps/branding",
   },
   {
     label: "Splash Screen",
     href: "/dashboard/apps/splash-screen",
   },
   {
-    label: "App Permissions",
+    label: "Permissions",
     href: "/dashboard/apps/permissions",
   },
   {
-    label: "App Settings",
+    label: "Settings",
     href: "/dashboard/apps/settings",
+  },
+  {
+    label: "Advanced",
+    href: "/dashboard/apps/advanced",
+  },
+  {
+    label: "Review",
+    href: "/dashboard/apps/review",
   },
 ];
-
-export const tempaltes_sideBar_options: NavigationItems[] = [
+export const templates_sideBar_options: NavigationItems[] = [
   {
-    label: "Template Info",
-    href: "/dashboard/apps/app-info",
+    label: "Basic Information",
+    href: "/dashboard/templates/template-info",
+  },
+  {
+    label: "Branding",
+    href: "/dashboard/templates/branding",
   },
   {
     label: "Splash Screen",
-    href: "/dashboard/apps/splash-screen",
+    href: "/dashboard/templates/splash-screen",
   },
   {
-    label: "App Permissions",
-    href: "/dashboard/apps/permissions",
+    label: "Permissions",
+    href: "/dashboard/templates/permissions",
   },
   {
-    label: "App Settings",
-    href: "/dashboard/apps/settings",
+    label: "Settings",
+    href: "/dashboard/templates/settings",
+  },
+  {
+    label: "Advanced",
+    href: "/dashboard/templates/advanced",
+  },
+  {
+    label: "Review",
+    href: "/dashboard/templates/review",
   },
 ];
 // export const templateItems: NavigationItems[] = [

@@ -10,7 +10,18 @@ export interface SplashScreen {
   backgroundColor: string;
   playbackBehaviour: "once" | "loop";
 }
+interface CreateAppState {
+  appInfo: {
+    name: string;
+    packageName: string;
+    description: string;
+    websiteUrl: string;
+    version: string;
+    icon: string;
+  };
 
+  templateId: string | null;
+}
 export interface AppPermissions {
   camera: boolean;
   microphone: boolean;

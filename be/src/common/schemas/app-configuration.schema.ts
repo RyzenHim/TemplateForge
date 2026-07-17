@@ -1,9 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
 
-// --------------------
-// Branding
-// --------------------
-
 @Schema({ _id: false })
 export class Branding {
   @Prop({
@@ -12,10 +8,6 @@ export class Branding {
   })
   primaryColor!: string;
 }
-
-// --------------------
-// Splash Screen
-// --------------------
 
 @Schema({ _id: false })
 export class SplashScreen {
@@ -56,10 +48,6 @@ export class SplashScreen {
   playbackBehaviour!: 'once' | 'loop';
 }
 
-// --------------------
-// App Permissions
-// --------------------
-
 @Schema({ _id: false })
 export class AppPermissions {
   @Prop({ default: false })
@@ -77,10 +65,6 @@ export class AppPermissions {
   @Prop({ default: false })
   notifications!: boolean;
 }
-
-// --------------------
-// App Settings
-// --------------------
 
 @Schema({ _id: false })
 export class AppSettings {

@@ -61,7 +61,7 @@ export class App {
     ref: 'Template',
     default: null,
   })
-  template!: Types.ObjectId | null;
+  sourceTemplate!: Types.ObjectId | null;
 
   @Prop({
     enum: ['draft', 'published', 'archived'],

@@ -2,7 +2,7 @@
 
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
-import { useProfile } from "@/app/lib/hooks/useProfile";
+import { useProfile } from "@/app/lib/hooks/auth/useProfile";
 
 export default function ProfilePage() {
   const { data, isLoading, isError } = useProfile();

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { updateApp } from "../services/app.service";
+import { updateApp } from "../../services/app.service";
 
 export function useUpdateApp() {
   return useMutation({

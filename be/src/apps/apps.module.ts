@@ -5,6 +5,10 @@ import { AppsController } from './apps.controller';
 import { AppsService } from './apps.service';
 
 import { App, AppSchema } from './schemas/app.schema';
+import {
+  Template,
+  TemplateSchema,
+} from 'src/templates/schemas/template.schema';
 
 @Module({
   imports: [
@@ -12,6 +16,10 @@ import { App, AppSchema } from './schemas/app.schema';
       {
         name: App.name,
         schema: AppSchema,
+      },
+      {
+        name: Template.name,
+        schema: TemplateSchema,
       },
     ]),
   ],

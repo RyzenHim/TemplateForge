@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProfile } from "../services/auth.service";
+import { getProfile } from "../../services/auth.service";
 
 export function useProfile() {
   return useQuery({

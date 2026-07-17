@@ -55,18 +55,6 @@ export class Template {
   category!: string;
 
   @Prop({
-    type: [String],
-    default: [],
-  })
-  tags!: string[];
-
-  @Prop({
-    default: 0,
-    min: 0,
-  })
-  usageCount!: number;
-
-  @Prop({
     type: Branding,
     required: true,
   })

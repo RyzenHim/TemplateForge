@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Card from "@/app/components/ui/Card";
 import Link from "next/link";
-import { useSignup } from "@/app/lib/hooks/useSignup";
+import { useSignup } from "@/app/lib/hooks/auth/useSignup";
 import { useRouter } from "next/navigation";
 import { showApiError, showApiSuccess } from "@/app/lib/utils";
 

@@ -11,8 +11,8 @@ import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import Loader from "@/app/components/ui/Loader";
 
-import { useApp } from "@/app/lib/hooks/useApp";
-import { useUpdateApp } from "@/app/lib/hooks/useUpdateApp";
+import { useApp } from "@/app/lib/hooks/app/useApp";
+import { useUpdateApp } from "@/app/lib/hooks/app/useUpdateApp";
 import { showApiError, showApiSuccess } from "@/app/lib/utils";
 
 const schema = z.object({

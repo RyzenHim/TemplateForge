@@ -7,7 +7,7 @@ import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
 
-import { useApps } from "@/app/lib/hooks/useApps";
+import { useApps } from "@/app/lib/hooks/app/useApps";
 
 export default function AppsPage() {
   const { data: apps = [], isLoading, isError } = useApps();

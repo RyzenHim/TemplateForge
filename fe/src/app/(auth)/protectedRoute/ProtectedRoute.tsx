@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Loader from "@/app/components/ui/Loader";
-import { useProfile } from "@/app/lib/hooks/useProfile";
+import { useProfile } from "@/app/lib/hooks/auth/useProfile";
 import { logout } from "@/app/lib/services/auth.service";
 interface ProtectedRouteProps {
   children: ReactNode;

@@ -7,7 +7,7 @@ import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
 
-import { useApp } from "@/app/lib/hooks/useApp";
+import { useApp } from "@/app/lib/hooks/app/useApp";
 
 export default function AppDetailsPage() {
   const params = useParams();

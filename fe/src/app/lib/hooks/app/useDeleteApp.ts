@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { deleteApp } from "../services/app.service";
+import { deleteApp } from "../../services/app.service";
 
 export function useDeleteApp() {
   return useMutation({

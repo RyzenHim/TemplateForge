@@ -19,21 +19,28 @@ export class AppsService {
       name: app.name,
       description: app.description,
       packageName: app.packageName,
+      version: app.version,
+      websiteUrl: app.websiteUrl,
       icon: app.icon,
       status: app.status,
       owner: app.owner,
-      template: app.template,
+      sourceTemplate: app.sourceTemplate,
+      branding: app.branding,
+      splashScreen: app.splashScreen,
+      appPermissions: app.appPermissions,
+      appSettings: app.appSettings,
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
     };
   }
 
   async create(createAppDto: CreateAppDto, userId: string) {
+    const { templateId, ...appData } = createAppDto;
     const app = await this.appModel.create({
-      ...createAppDto,
+      ...appData,
       owner: new Types.ObjectId(userId),
+      sourceTemplate: templateId ?? null,
     });
-
     return {
       message: 'App created successfully',
       app: this.mapApp(app),
@@ -44,7 +51,6 @@ export class AppsService {
     const apps = await this.appModel.find({
       owner: new Types.ObjectId(userId),
     });
-
     return apps.map((app) => this.mapApp(app));
   }
 
@@ -53,11 +59,9 @@ export class AppsService {
       _id: id,
       owner: new Types.ObjectId(userId),
     });
-
     if (!app) {
       throw new NotFoundException('App not found');
     }
-
     return this.mapApp(app);
   }
 
@@ -72,11 +76,9 @@ export class AppsService {
         new: true,
       },
     );
-
     if (!app) {
       throw new NotFoundException('App not found');
     }
-
     return {
       message: 'App updated successfully',
       app: this.mapApp(app),
@@ -88,11 +90,9 @@ export class AppsService {
       _id: id,
       owner: new Types.ObjectId(userId),
     });
-
     if (!app) {
       throw new NotFoundException('App not found');
     }
-
     return {
       message: 'App deleted successfully',
     };

@@ -46,14 +46,6 @@ export const app_sideBar_options: NavigationItems[] = [
     label: "Settings",
     href: "/dashboard/apps/settings",
   },
-  {
-    label: "Advanced",
-    href: "/dashboard/apps/advanced",
-  },
-  {
-    label: "Review",
-    href: "/dashboard/apps/review",
-  },
 ];
 export const templates_sideBar_options: NavigationItems[] = [
   {

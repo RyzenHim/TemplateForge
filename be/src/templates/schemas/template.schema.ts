@@ -55,6 +55,12 @@ export class Template {
   category!: string;
 
   @Prop({
+    type: [String],
+    default: [],
+  })
+  tags!: string[];
+
+  @Prop({
     type: Branding,
     required: true,
   })

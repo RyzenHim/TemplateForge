@@ -13,7 +13,7 @@ export class AppsService {
     private readonly appModel: Model<AppDocument>,
   ) {}
 
-  private mapApp(app: AppDocument) {
+  private mapApp(app: any) {
     return {
       id: app._id.toString(),
       name: app.name,
@@ -24,7 +24,8 @@ export class AppsService {
       icon: app.icon,
       status: app.status,
       owner: app.owner,
-      sourceTemplate: app.sourceTemplate,
+      sourceTemplate: app.sourceTemplate?._id ? app.sourceTemplate._id.toString() : (app.sourceTemplate?.toString() || null),
+      templateName: app.sourceTemplate?.name || 'None',
       branding: app.branding,
       splashScreen: app.splashScreen,
       appPermissions: app.appPermissions,
@@ -41,16 +42,17 @@ export class AppsService {
       owner: new Types.ObjectId(userId),
       sourceTemplate: templateId ?? null,
     });
+    const populatedApp = await app.populate('sourceTemplate');
     return {
       message: 'App created successfully',
-      app: this.mapApp(app),
+      app: this.mapApp(populatedApp),
     };
   }
 
   async findAll(userId: string) {
     const apps = await this.appModel.find({
       owner: new Types.ObjectId(userId),
-    });
+    }).populate('sourceTemplate');
     return apps.map((app) => this.mapApp(app));
   }
 
@@ -58,7 +60,7 @@ export class AppsService {
     const app = await this.appModel.findOne({
       _id: id,
       owner: new Types.ObjectId(userId),
-    });
+    }).populate('sourceTemplate');
     if (!app) {
       throw new NotFoundException('App not found');
     }
@@ -75,7 +77,7 @@ export class AppsService {
       {
         new: true,
       },
-    );
+    ).populate('sourceTemplate');
     if (!app) {
       throw new NotFoundException('App not found');
     }

@@ -5,6 +5,7 @@ import { useState } from "react";
 import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
+import TemplateCard from "@/app/components/ui/TemplateCard";
 
 import CreateTemplateModal from "./modals/CreateTemplateModal";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
@@ -13,6 +14,9 @@ export default function TemplatePage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: templates = [], isLoading, isError } = useTemplates();
+  const privateTemplates = templates.filter(
+    (template) => template.visibility === "private",
+  );
 
   return (
     <>
@@ -36,7 +40,7 @@ export default function TemplatePage() {
           <Card className="flex min-h-[300px] items-center justify-center">
             <p className="text-red-500">Failed to load templates.</p>
           </Card>
-        ) : templates.length === 0 ? (
+        ) : privateTemplates.length === 0 ? (
           <Card className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
               <h2 className="text-lg font-semibold">No Templates Yet</h2>
@@ -56,14 +60,13 @@ export default function TemplatePage() {
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {templates.map((template) => (
-              <Card key={template.id} className="p-5">
-                <h3 className="text-lg font-semibold">{template.name}</h3>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  {template.description || "No description"}
-                </p>
-              </Card>
+            {privateTemplates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                actionHref="/dashboard/templates"
+                actionLabel="Use template"
+              />
             ))}
           </div>
         )}

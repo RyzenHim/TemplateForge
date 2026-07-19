@@ -53,6 +53,7 @@ export interface App {
   status: "draft" | "published" | "archived";
   owner: string;
   sourceTemplate: string | null;
+  templateName?: string;
   branding: Branding;
   splashScreen: SplashScreen;
   appPermissions: AppPermissions;

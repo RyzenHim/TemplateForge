@@ -12,6 +12,7 @@ export interface Template {
   visibility: "public" | "private" | "system";
   thumbnail: string;
   category: string;
+  tags: string[];
   owner: string;
   branding: Branding;
   splashScreen: SplashScreen;
@@ -27,6 +28,7 @@ export interface CreateTemplateRequest {
   visibility: "public" | "private";
   thumbnail?: string;
   category?: string;
+  tags?: string[];
   branding: Branding;
   splashScreen: SplashScreen;
   appPermissions: AppPermissions;

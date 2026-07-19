@@ -21,6 +21,7 @@ export class TemplatesService {
       visibility: template.visibility,
       thumbnail: template.thumbnail,
       category: template.category,
+      tags: template.tags,
       owner: template.owner,
       branding: template.branding,
       splashScreen: template.splashScreen,

@@ -7,6 +7,7 @@ import { Plus, Search } from "lucide-react";
 import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
+import AppCard from "@/app/components/ui/AppCard";
 
 import { useApps } from "@/app/lib/hooks/app/useApps";
 import CreateAppModal from "./modals/CreateAppModal";
@@ -86,33 +87,7 @@ export default function AppsPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {apps.map((app) => (
-              <Card key={app.id}>
-                <div className="space-y-5">
-                  <div>
-                    <h2 className="text-xl font-semibold">{app.name}</h2>
-
-                    <p className="mt-2 line-clamp-2 text-sm text-zinc-500">
-                      {app.description || "No description"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-zinc-500">Package Name</p>
-
-                    <p className="font-medium">{app.packageName}</p>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <Link href={`/dashboard/apps/${app.id}`}>
-                      <Button>View</Button>
-                    </Link>
-
-                    <Link href={`/dashboard/apps/${app.id}/edit`}>
-                      <Button>Edit</Button>
-                    </Link>
-                  </div>
-                </div>
-              </Card>
+              <AppCard key={app.id} app={app} />
             ))}
           </div>
         )}

@@ -30,6 +30,7 @@ export class TemplatesController {
     return this.templateService.create(req.user.id, createTemplateDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('my')
   findMyTemplates(@Req() req: AuthenticatedRequest) {
     return this.templateService.findMyTemplates(req.user.id);

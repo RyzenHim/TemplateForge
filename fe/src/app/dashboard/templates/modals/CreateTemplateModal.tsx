@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,12 +47,19 @@ export default function CreateTemplateModal({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<CreateTemplateFormData>({
     resolver: zodResolver(createTemplateSchema),
     mode: "onBlur",
     defaultValues: templateInfo,
   });
+
+  useEffect(() => {
+    if (!open) {
+      reset(templateInfo);
+    }
+  }, [open, reset, templateInfo]);
 
   function onSubmit(data: CreateTemplateFormData) {
     dispatch(setTemplateInfo(data));

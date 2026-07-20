@@ -31,6 +31,7 @@ import { usePublicTemplates } from "@/app/lib/hooks/template/usePublicTemplates"
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
 import type { Template } from "@/app/lib/types/template.types";
 import Modal from "@/app/components/ui/Modal";
+import { showApiError } from "@/app/lib/utils";
 
 const hexColor = z
   .string()
@@ -391,7 +392,9 @@ export default function CreateAppPage() {
         dispatch(resetCreateApp());
         router.push("/dashboard/apps");
       },
-      // TODO: Use the project's showApiError(error) helper here.
+      onError: (error) => {
+        showApiError(error);
+      },
     });
   }
 

@@ -1,22 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
 import TemplateCard from "@/app/components/ui/TemplateCard";
+import SearchBar from "@/app/components/ui/SearchBar";
 
 import CreateTemplateModal from "./modals/CreateTemplateModal";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
 
 export default function TemplatePage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: templates = [], isLoading, isError } = useTemplates();
-  const privateTemplates = templates.filter(
-    (template) => template.visibility === "private",
-  );
+
+  const filteredTemplates = useMemo(() => {
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+
+    if (!normalizedQuery) return templates;
+
+    return templates.filter((template) => {
+      const haystacks = [
+        template.name,
+        template.description,
+        template.category,
+        ...(template.tags ?? []),
+      ]
+        .filter(Boolean)
+        .map((value) => value.toLowerCase());
+
+      return haystacks.some((value) => value.includes(normalizedQuery));
+    });
+  }, [templates, searchTerm]);
 
   return (
     <>
@@ -40,7 +58,7 @@ export default function TemplatePage() {
           <Card className="flex min-h-[300px] items-center justify-center">
             <p className="text-red-500">Failed to load templates.</p>
           </Card>
-        ) : privateTemplates.length === 0 ? (
+        ) : templates.length === 0 ? (
           <Card className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
               <h2 className="text-lg font-semibold">No Templates Yet</h2>
@@ -59,16 +77,36 @@ export default function TemplatePage() {
             </div>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {privateTemplates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                actionHref="/dashboard/templates"
-                actionLabel="Use template"
-              />
-            ))}
-          </div>
+          <>
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search templates..."
+            />
+
+            {filteredTemplates.length === 0 ? (
+              <Card className="flex min-h-[300px] items-center justify-center">
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold">No matching templates</h2>
+
+                  <p className="mt-2 text-sm text-gray-500">
+                    Try a different search term.
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {filteredTemplates.map((template) => (
+                  <TemplateCard
+                    key={template.id}
+                    template={template}
+                    actionHref="/dashboard/templates"
+                    actionLabel="Use template"
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

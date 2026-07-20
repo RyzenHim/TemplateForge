@@ -2,8 +2,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
-import { useQueryClient } from "@tanstack/react-query";
-
 import { useDeleteTemplate } from "@/app/lib/hooks/template/useDeleteTemplate";
 
 import Card from "@/app/components/ui/Card";
@@ -31,7 +29,6 @@ export default function TemplateCard({
   const [isDeleting, setIsDeleting] = useState(false);
   const visibleTags = template.tags?.slice(0, 3) ?? [];
 
-  const queryClient = useQueryClient();
   const { mutate: deleteTemplate } = useDeleteTemplate();
 
   const currentUserId =
@@ -127,11 +124,7 @@ export default function TemplateCard({
                 setIsDeleting(true);
 
                 deleteTemplate(template.id, {
-                  onSuccess: async () => {
-                    // Force refresh so the deleted template disappears immediately.
-                    await queryClient.refetchQueries({
-                      queryKey: ["templates"],
-                    });
+                  onSuccess: () => {
                     setIsDeleting(false);
                   },
                   onError: () => {

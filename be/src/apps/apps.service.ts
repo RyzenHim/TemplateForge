@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -39,11 +43,19 @@ export class AppsService {
 
   async create(createAppDto: CreateAppDto, userId: string) {
     const { templateId, ...appData } = createAppDto;
-    const app = await this.appModel.create({
-      ...appData,
-      owner: new Types.ObjectId(userId),
-      sourceTemplate: templateId ?? null,
-    });
+    let app: AppDocument;
+    try {
+      app = await this.appModel.create({
+        ...appData,
+        owner: new Types.ObjectId(userId),
+        sourceTemplate: templateId ?? null,
+      });
+    } catch (error: any) {
+      if (error?.code === 11000) {
+        throw new ConflictException('Package name already exists');
+      }
+      throw error;
+    }
     const populatedApp = await app.populate('sourceTemplate');
     return {
       message: 'App created successfully',

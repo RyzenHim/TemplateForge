@@ -24,6 +24,8 @@ import {
   setTemplateId,
 } from "@/app/lib/redux/slices/createAppSlice";
 import { useCreateApp } from "@/app/lib/hooks/app/useCreateApp";
+import { useApps } from "@/app/lib/hooks/app/useApps";
+import type { App } from "@/app/lib/types/app.types";
 import { useCreateTemplate } from "@/app/lib/hooks/template/useCreateTemplate";
 import { usePublicTemplates } from "@/app/lib/hooks/template/usePublicTemplates";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
@@ -203,7 +205,8 @@ export default function CreateAppPage() {
   });
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
-  const [importTab, setImportTab] = useState<"private" | "public">("private");
+  const [importTab, setImportTab] = useState<"private" | "public" | "apps">("private");
+  const { data: existingApps = [], isLoading: isLoadingApps } = useApps();
 
   const { data: privateTemplates = [], isLoading: isLoadingPrivate } =
     useTemplates();
@@ -267,11 +270,18 @@ export default function CreateAppPage() {
   });
 
   const values = useWatch({ control }) ?? reduxDefaults;
+  console.log("on the create app page");
+  console.log("Splash Type:", values.splashScreen?.type);
+  console.log("Orientation:", values.appSettings?.orientation);
 
-  // Redux can be populated by the modal after this editor is mounted.
+  // Reset the form only when the editor is first mounted from the modal draft.
+  // This prevents overwriting splash/orientation selections while the user edits.
+  const [hasHydrated, setHasHydrated] = useState(false);
   useEffect(() => {
+    if (hasHydrated) return;
     reset(reduxDefaults);
-  }, [reduxDefaults, reset]);
+    setHasHydrated(true);
+  }, [hasHydrated, reduxDefaults, reset]);
 
   useEffect(() => {
     if (!isSaveTemplateModalOpen) return;
@@ -358,6 +368,73 @@ export default function CreateAppPage() {
     dispatch(setTemplateId(template.id));
 
     toast.success("Template settings imported successfully.");
+    setIsImportModalOpen(false);
+  }
+
+  function applyImportedApp(app: App) {
+    const currentValues = getValues();
+
+    setValue("name", app.name || currentValues.name, {
+      shouldDirty: true,
+    });
+    setValue("packageName", app.packageName || currentValues.packageName, {
+      shouldDirty: true,
+    });
+    setValue("version", app.version || currentValues.version || "1.0.0", {
+      shouldDirty: true,
+    });
+    setValue("websiteUrl", app.websiteUrl || currentValues.websiteUrl, {
+      shouldDirty: true,
+    });
+    setValue("icon", app.icon || currentValues.icon, {
+      shouldDirty: true,
+    });
+    setValue("description", app.description || currentValues.description, {
+      shouldDirty: true,
+    });
+
+    setValue(
+      "branding",
+      cloneValue(
+        app.branding ?? currentValues.branding ?? editorDefaults.branding,
+      ),
+      { shouldDirty: true },
+    );
+    setValue(
+      "splashScreen",
+      cloneValue(
+        app.splashScreen ??
+          currentValues.splashScreen ??
+          editorDefaults.splashScreen,
+      ),
+      { shouldDirty: true },
+    );
+    setValue(
+      "appPermissions",
+      cloneValue(
+        app.appPermissions ??
+          currentValues.appPermissions ??
+          editorDefaults.appPermissions,
+      ),
+      { shouldDirty: true },
+    );
+    setValue(
+      "appSettings",
+      cloneValue(
+        app.appSettings ??
+          currentValues.appSettings ??
+          editorDefaults.appSettings,
+      ),
+      { shouldDirty: true },
+    );
+
+    if (app.sourceTemplate) {
+      dispatch(setTemplateId(app.sourceTemplate));
+    } else {
+      dispatch(setTemplateId(null));
+    }
+
+    toast.success("App settings imported successfully.");
     setIsImportModalOpen(false);
   }
 
@@ -534,20 +611,20 @@ export default function CreateAppPage() {
       <Modal
         open={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        title="Import template settings"
-        description="Choose a template to prefill matching app settings."
+        title="Import settings"
+        description="Choose a template or an existing app to prefill settings."
         width="lg"
       >
         <div className="space-y-4">
           <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 p-1 dark:border-zinc-700 dark:bg-zinc-800">
-            {(["private", "public"] as const).map((tab) => (
+            {(["private", "public", "apps"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setImportTab(tab)}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium capitalize transition ${importTab === tab ? "bg-white text-indigo-700 shadow-sm dark:bg-zinc-900 dark:text-indigo-300" : "text-zinc-600 dark:text-zinc-300"}`}
               >
-                {tab} templates
+                {tab === "apps" ? "Existing apps" : `${tab} templates`}
               </button>
             ))}
           </div>
@@ -587,32 +664,65 @@ export default function CreateAppPage() {
                   ))}
               </div>
             )
-          ) : isLoadingPublic ? (
-            <p className="text-sm text-zinc-500">Loading public templates…</p>
-          ) : publicTemplates.length === 0 ? (
+          ) : importTab === "public" ? (
+            isLoadingPublic ? (
+              <p className="text-sm text-zinc-500">Loading public templates…</p>
+            ) : publicTemplates.length === 0 ? (
+              <p className="text-sm text-zinc-500">
+                No public templates are available.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {publicTemplates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => applyImportedTemplate(template)}
+                    className="w-full rounded-xl border border-zinc-200 p-4 text-left transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-zinc-900 dark:text-white">
+                          {template.name}
+                        </p>
+                        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                          {template.description || "No description provided"}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        {template.visibility}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )
+          ) : isLoadingApps ? (
+            <p className="text-sm text-zinc-500">Loading your apps…</p>
+          ) : existingApps.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              No public templates are available.
+              You do not have any existing apps yet.
             </p>
           ) : (
             <div className="space-y-2">
-              {publicTemplates.map((template) => (
+              {existingApps.map((app) => (
                 <button
-                  key={template.id}
+                  key={app.id}
                   type="button"
-                  onClick={() => applyImportedTemplate(template)}
+                  onClick={() => applyImportedApp(app)}
                   className="w-full rounded-xl border border-zinc-200 p-4 text-left transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold text-zinc-900 dark:text-white">
-                        {template.name}
+                        {app.name}
                       </p>
                       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {template.description || "No description provided"}
+                        {app.packageName || "No package name"}
                       </p>
                     </div>
                     <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                      {template.visibility}
+                      {app.status}
                     </span>
                   </div>
                 </button>
@@ -807,8 +917,13 @@ export default function CreateAppPage() {
                 <div className="space-y-5">
                   <div className="grid gap-3 sm:grid-cols-3">
                     {(["logo", "image", "animation"] as const).map((type) => (
-                      <label
+                      <div
                         key={type}
+                        onClick={() =>
+                          setValue("splashScreen.type", type, {
+                            shouldDirty: true,
+                          })
+                        }
                         className={`cursor-pointer rounded-xl border p-4 transition ${values.splashScreen?.type === type ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"}`}
                       >
                         <input
@@ -816,6 +931,8 @@ export default function CreateAppPage() {
                           value={type}
                           className="sr-only"
                           {...register("splashScreen.type")}
+                          checked={values.splashScreen?.type === type}
+                          readOnly
                         />
                         <span className="block text-sm font-semibold capitalize text-zinc-900 dark:text-white">
                           {type === "image" ? "Full image" : type}
@@ -827,7 +944,7 @@ export default function CreateAppPage() {
                               ? "Fill the screen with an image"
                               : "Show a centred logo"}
                         </span>
-                      </label>
+                      </div>
                     ))}
                   </div>
                   <div className="grid gap-5 sm:grid-cols-2">
@@ -1053,8 +1170,13 @@ export default function CreateAppPage() {
                     <div className="mt-2 grid gap-3 sm:grid-cols-3">
                       {(["portrait", "landscape", "both"] as const).map(
                         (option) => (
-                          <label
+                          <div
                             key={option}
+                            onClick={() =>
+                              setValue("appSettings.orientation", option, {
+                                shouldDirty: true,
+                              })
+                            }
                             className={`cursor-pointer rounded-lg border px-4 py-3 text-sm font-medium capitalize transition ${values.appSettings?.orientation === option ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300" : "border-zinc-200 text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-300"}`}
                           >
                             <input
@@ -1062,9 +1184,11 @@ export default function CreateAppPage() {
                               value={option}
                               className="sr-only"
                               {...register("appSettings.orientation")}
+                              checked={values.appSettings?.orientation === option}
+                              readOnly
                             />
                             {option}
-                          </label>
+                          </div>
                         ),
                       )}
                     </div>

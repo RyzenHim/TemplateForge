@@ -9,7 +9,7 @@ export interface Template {
   id: string;
   name: string;
   description: string;
-  visibility: "public" | "private" | "system";
+  visibility: "public" | "private";
   thumbnail: string;
   category: string;
   tags: string[];

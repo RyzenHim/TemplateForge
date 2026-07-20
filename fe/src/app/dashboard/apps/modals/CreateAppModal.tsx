@@ -86,6 +86,7 @@ export default function CreateAppModal({ open, onClose }: CreateAppModalProps) {
       setAppInfo({
         ...appInfo,
         ...data,
+        // keep existing defaults for splashScreen/appPermissions/appSettings
       }),
     );
 

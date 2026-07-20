@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { Eye, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+
+import { useQueryClient } from "@tanstack/react-query";
+
+import { useDeleteTemplate } from "@/app/lib/hooks/template/useDeleteTemplate";
 
 import Card from "@/app/components/ui/Card";
 import type { Template } from "@/app/lib/types/template.types";
@@ -23,10 +28,16 @@ export default function TemplateCard({
   actionHref = "/login",
   actionLabel = "Use template",
 }: TemplateCardProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
   const visibleTags = template.tags?.slice(0, 3) ?? [];
+
+  const queryClient = useQueryClient();
+  const { mutate: deleteTemplate } = useDeleteTemplate();
+
   const currentUserId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
   const canEdit = currentUserId && template.owner === currentUserId;
+  const canDelete = canEdit;
 
   return (
     <Card className="group flex h-full flex-col transition-all duration-200 hover:-translate-y-1 hover:border-indigo-500/50 hover:shadow-xl">
@@ -93,6 +104,7 @@ export default function TemplateCard({
           >
             <Eye size={14} /> View
           </Link>
+
           {canEdit ? (
             <Link
               href={`/dashboard/templates/${template.id}/edit`}
@@ -100,6 +112,39 @@ export default function TemplateCard({
             >
               <Pencil size={14} /> Edit
             </Link>
+          ) : null}
+
+          {canDelete ? (
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => {
+                const ok = window.confirm(
+                  `Delete template "${template.name}"?`,
+                );
+                if (!ok) return;
+
+                setIsDeleting(true);
+
+                deleteTemplate(template.id, {
+                  onSuccess: async () => {
+                    // Force refresh so the deleted template disappears immediately.
+                    await queryClient.refetchQueries({
+                      queryKey: ["templates"],
+                    });
+                    setIsDeleting(false);
+                  },
+                  onError: () => {
+                    setIsDeleting(false);
+                    window.alert("Failed to delete template.");
+                  },
+                });
+              }}
+              className="inline-flex items-center gap-1 text-sm font-medium text-red-600 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-400 dark:hover:text-red-300"
+              aria-label={`Delete template ${template.name}`}
+            >
+              <Trash2 size={14} /> {isDeleting ? "Deleting…" : "Delete"}
+            </button>
           ) : null}
         </div>
       </div>

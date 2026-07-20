@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -11,8 +11,6 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
-  Save,
-  Sparkles,
 } from "lucide-react";
 
 import Button from "@/app/components/ui/Button";
@@ -152,6 +150,7 @@ export default function EditTemplatePage() {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<TemplateEditorValues>({
     resolver: zodResolver(templateEditorSchema),
@@ -358,8 +357,13 @@ export default function EditTemplatePage() {
               <div className="space-y-5">
                 <div className="grid gap-3 sm:grid-cols-3">
                   {(["logo", "image", "animation"] as const).map((type) => (
-                    <label
+                    <div
                       key={type}
+                      onClick={() =>
+                        setValue("splashScreen.type", type, {
+                          shouldDirty: true,
+                        })
+                      }
                       className={`cursor-pointer rounded-xl border p-4 transition ${values.splashScreen?.type === type ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"}`}
                     >
                       <input
@@ -367,6 +371,8 @@ export default function EditTemplatePage() {
                         value={type}
                         className="sr-only"
                         {...register("splashScreen.type")}
+                        checked={values.splashScreen?.type === type}
+                        readOnly
                       />
                       <span className="block text-sm font-semibold capitalize text-zinc-900 dark:text-white">
                         {type === "image" ? "Full image" : type}
@@ -378,7 +384,7 @@ export default function EditTemplatePage() {
                             ? "Fill the screen with an image"
                             : "Show a centred logo"}
                       </span>
-                    </label>
+                    </div>
                   ))}
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
@@ -524,8 +530,13 @@ export default function EditTemplatePage() {
                   <div className="mt-2 grid gap-3 sm:grid-cols-3">
                     {(["portrait", "landscape", "both"] as const).map(
                       (option) => (
-                        <label
+                        <div
                           key={option}
+                          onClick={() =>
+                            setValue("appSettings.orientation", option, {
+                              shouldDirty: true,
+                            })
+                          }
                           className={`cursor-pointer rounded-lg border px-4 py-3 text-sm font-medium capitalize transition ${values.appSettings?.orientation === option ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300" : "border-zinc-200 text-zinc-700 hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-300"}`}
                         >
                           <input
@@ -533,9 +544,11 @@ export default function EditTemplatePage() {
                             value={option}
                             className="sr-only"
                             {...register("appSettings.orientation")}
+                            checked={values.appSettings?.orientation === option}
+                            readOnly
                           />
                           {option}
-                        </label>
+                        </div>
                       ),
                     )}
                   </div>

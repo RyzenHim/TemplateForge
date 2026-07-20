@@ -9,6 +9,10 @@ import {
   Pencil,
   ShieldAlert,
   Sparkles,
+  Settings,
+  ShieldCheck,
+  Check,
+  X,
 } from "lucide-react";
 
 import Button from "@/app/components/ui/Button";
@@ -212,6 +216,205 @@ export default function TemplateDetailsPage() {
                   {template.splashScreen?.backgroundColor || "#FFFFFF"}
                 </span>
               </div>
+            </div>
+            {template.splashScreen?.type === "animation" && (
+              <div className="col-span-2">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Animation JSON URL</p>
+                <p className="mt-1 break-all text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  {template.splashScreen?.animationJson || "Not set"}
+                </p>
+              </div>
+            )}
+            {template.splashScreen?.type === "image" && (
+              <div className="col-span-2">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Full Image URL</p>
+                <p className="mt-1 break-all text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  {template.splashScreen?.fullImage || "Not set"}
+                </p>
+              </div>
+            )}
+            {template.splashScreen?.type === "logo" && (
+              <div className="col-span-2">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Logo Image URL</p>
+                <p className="mt-1 break-all text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  {template.splashScreen?.logoImage || "Not set"}
+                </p>
+              </div>
+            )}
+            <div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Playback Behaviour</p>
+              <p className="mt-1 font-semibold capitalize text-zinc-900 dark:text-zinc-100">
+                {template.splashScreen?.playbackBehaviour || "once"}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Card 3: App Settings */}
+        <Card className="p-6 space-y-6 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 dark:border-zinc-800">
+            <div className="rounded-lg bg-zinc-50 p-1.5 text-zinc-600 dark:bg-zinc-500/10 dark:text-zinc-400">
+              <Settings size={18} />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              App Settings
+            </h3>
+          </div>
+          
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Screen Orientation</p>
+              <p className="mt-1 font-semibold capitalize text-zinc-900 dark:text-zinc-100">
+                {template.appSettings?.orientation || "portrait"}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Status Bar Color</p>
+              <div className="mt-1.5 flex items-center gap-2">
+                <span
+                  className="h-6 w-6 rounded-md border border-zinc-200 shadow-sm dark:border-zinc-700"
+                  style={{
+                    backgroundColor: template.appSettings?.statusBarColor || "#FFFFFF",
+                  }}
+                />
+                <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                  {template.appSettings?.statusBarColor || "#FFFFFF"}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">System Navigation Bar Color</p>
+              <div className="mt-1.5 flex items-center gap-2">
+                <span
+                  className="h-6 w-6 rounded-md border border-zinc-200 shadow-sm dark:border-zinc-700"
+                  style={{
+                    backgroundColor: template.appSettings?.systemNavigationBarColor || "#FFFFFF",
+                  }}
+                />
+                <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                  {template.appSettings?.systemNavigationBarColor || "#FFFFFF"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-100 pt-6 dark:border-zinc-800">
+            <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">Device Features</h4>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 text-sm">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <span className="text-zinc-600 dark:text-zinc-400">Full Screen Mode</span>
+                {template.appSettings?.fullScreen ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Enabled</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Disabled</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <span className="text-zinc-600 dark:text-zinc-400">Pinch to Zoom</span>
+                {template.appSettings?.pinchToZoom ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Enabled</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Disabled</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <span className="text-zinc-600 dark:text-zinc-400">Callback on Resume</span>
+                {template.appSettings?.callbackOnResume ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Enabled</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Disabled</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <span className="text-zinc-600 dark:text-zinc-400">Disable Caching</span>
+                {template.appSettings?.disableCaching ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Enabled</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Disabled</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <span className="text-zinc-600 dark:text-zinc-400">Kiosk Mode</span>
+                {template.appSettings?.kioskMode ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Enabled</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Disabled</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+                <span className="text-zinc-600 dark:text-zinc-400">Disable Scroll Bounce</span>
+                {template.appSettings?.disableScrollBounce ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Enabled</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Disabled</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Card 4: App Permissions */}
+        <Card className="p-6 space-y-6 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 dark:border-zinc-800">
+            <div className="rounded-lg bg-emerald-50 p-1.5 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <ShieldCheck size={18} />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              App Permissions
+            </h3>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 text-sm">
+            <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400">Camera</span>
+              {template.appPermissions?.camera ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Allowed</span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Denied</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400">Microphone</span>
+              {template.appPermissions?.microphone ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Allowed</span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Denied</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400">Location Access</span>
+              {template.appPermissions?.location ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Allowed</span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Denied</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400">Storage Access</span>
+              {template.appPermissions?.storage ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Allowed</span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Denied</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400">Push Notifications</span>
+              {template.appPermissions?.notifications ? (
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600"><Check size={14} /> Allowed</span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs font-semibold text-zinc-400"><X size={14} /> Denied</span>
+              )}
             </div>
           </div>
         </Card>

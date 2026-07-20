@@ -759,12 +759,12 @@ export default function CreateAppPage() {
                         placeholder="https://.../icon.png"
                         {...register("icon")}
                       />
-                      <button
+                      {/* <button
                         type="button"
                         className="mt-1.5 inline-flex h-10 items-center gap-2 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                       >
                         <Upload size={16} /> Upload
-                      </button>
+                      </button> */}
                     </div>
                     {/* TODO: Connect Upload to object storage and set the returned URL with setValue("icon", url). */}
                   </Field>

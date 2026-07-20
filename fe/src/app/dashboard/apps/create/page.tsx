@@ -24,8 +24,8 @@ import {
   setTemplateId,
 } from "@/app/lib/redux/slices/createAppSlice";
 import { useCreateApp } from "@/app/lib/hooks/app/useCreateApp";
-import { useApps } from "@/app/lib/hooks/app/useApps";
-import type { App } from "@/app/lib/types/app.types";
+// import { useApps } from "@/app/lib/hooks/app/useApps";
+// import type { App } from "@/app/lib/types/app.types";
 import { useCreateTemplate } from "@/app/lib/hooks/template/useCreateTemplate";
 import { usePublicTemplates } from "@/app/lib/hooks/template/usePublicTemplates";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
@@ -205,8 +205,8 @@ export default function CreateAppPage() {
   });
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
-  const [importTab, setImportTab] = useState<"private" | "public" | "apps">("private");
-  const { data: existingApps = [], isLoading: isLoadingApps } = useApps();
+  const [importTab, setImportTab] = useState<"private" | "public">("private");
+  // const { data: existingApps = [], isLoading: isLoadingApps } = useApps();
 
   const { data: privateTemplates = [], isLoading: isLoadingPrivate } =
     useTemplates();
@@ -368,73 +368,6 @@ export default function CreateAppPage() {
     dispatch(setTemplateId(template.id));
 
     toast.success("Template settings imported successfully.");
-    setIsImportModalOpen(false);
-  }
-
-  function applyImportedApp(app: App) {
-    const currentValues = getValues();
-
-    setValue("name", app.name || currentValues.name, {
-      shouldDirty: true,
-    });
-    setValue("packageName", app.packageName || currentValues.packageName, {
-      shouldDirty: true,
-    });
-    setValue("version", app.version || currentValues.version || "1.0.0", {
-      shouldDirty: true,
-    });
-    setValue("websiteUrl", app.websiteUrl || currentValues.websiteUrl, {
-      shouldDirty: true,
-    });
-    setValue("icon", app.icon || currentValues.icon, {
-      shouldDirty: true,
-    });
-    setValue("description", app.description || currentValues.description, {
-      shouldDirty: true,
-    });
-
-    setValue(
-      "branding",
-      cloneValue(
-        app.branding ?? currentValues.branding ?? editorDefaults.branding,
-      ),
-      { shouldDirty: true },
-    );
-    setValue(
-      "splashScreen",
-      cloneValue(
-        app.splashScreen ??
-          currentValues.splashScreen ??
-          editorDefaults.splashScreen,
-      ),
-      { shouldDirty: true },
-    );
-    setValue(
-      "appPermissions",
-      cloneValue(
-        app.appPermissions ??
-          currentValues.appPermissions ??
-          editorDefaults.appPermissions,
-      ),
-      { shouldDirty: true },
-    );
-    setValue(
-      "appSettings",
-      cloneValue(
-        app.appSettings ??
-          currentValues.appSettings ??
-          editorDefaults.appSettings,
-      ),
-      { shouldDirty: true },
-    );
-
-    if (app.sourceTemplate) {
-      dispatch(setTemplateId(app.sourceTemplate));
-    } else {
-      dispatch(setTemplateId(null));
-    }
-
-    toast.success("App settings imported successfully.");
     setIsImportModalOpen(false);
   }
 
@@ -617,14 +550,14 @@ export default function CreateAppPage() {
       >
         <div className="space-y-4">
           <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 p-1 dark:border-zinc-700 dark:bg-zinc-800">
-            {(["private", "public", "apps"] as const).map((tab) => (
+            {(["private", "public"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setImportTab(tab)}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium capitalize transition ${importTab === tab ? "bg-white text-indigo-700 shadow-sm dark:bg-zinc-900 dark:text-indigo-300" : "text-zinc-600 dark:text-zinc-300"}`}
               >
-                {tab === "apps" ? "Existing apps" : `${tab} templates`}
+                {`${tab} templates`}
               </button>
             ))}
           </div>
@@ -664,65 +597,32 @@ export default function CreateAppPage() {
                   ))}
               </div>
             )
-          ) : importTab === "public" ? (
-            isLoadingPublic ? (
-              <p className="text-sm text-zinc-500">Loading public templates…</p>
-            ) : publicTemplates.length === 0 ? (
-              <p className="text-sm text-zinc-500">
-                No public templates are available.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {publicTemplates.map((template) => (
-                  <button
-                    key={template.id}
-                    type="button"
-                    onClick={() => applyImportedTemplate(template)}
-                    className="w-full rounded-xl border border-zinc-200 p-4 text-left transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-zinc-900 dark:text-white">
-                          {template.name}
-                        </p>
-                        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                          {template.description || "No description provided"}
-                        </p>
-                      </div>
-                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                        {template.visibility}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )
-          ) : isLoadingApps ? (
-            <p className="text-sm text-zinc-500">Loading your apps…</p>
-          ) : existingApps.length === 0 ? (
+          ) : isLoadingPublic ? (
+            <p className="text-sm text-zinc-500">Loading public templates…</p>
+          ) : publicTemplates.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              You do not have any existing apps yet.
+              No public templates are available.
             </p>
           ) : (
             <div className="space-y-2">
-              {existingApps.map((app) => (
+              {publicTemplates.map((template) => (
                 <button
-                  key={app.id}
+                  key={template.id}
                   type="button"
-                  onClick={() => applyImportedApp(app)}
+                  onClick={() => applyImportedTemplate(template)}
                   className="w-full rounded-xl border border-zinc-200 p-4 text-left transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold text-zinc-900 dark:text-white">
-                        {app.name}
+                        {template.name}
                       </p>
                       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        {app.packageName || "No package name"}
+                        {template.description || "No description provided"}
                       </p>
                     </div>
                     <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                      {app.status}
+                      {template.visibility}
                     </span>
                   </div>
                 </button>
@@ -1184,7 +1084,9 @@ export default function CreateAppPage() {
                               value={option}
                               className="sr-only"
                               {...register("appSettings.orientation")}
-                              checked={values.appSettings?.orientation === option}
+                              checked={
+                                values.appSettings?.orientation === option
+                              }
                               readOnly
                             />
                             {option}

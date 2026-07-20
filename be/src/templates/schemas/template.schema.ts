@@ -37,10 +37,10 @@ export class Template {
   description!: string;
 
   @Prop({
-    enum: ['system', 'public', 'private'],
+    enum: ['public', 'private'],
     default: 'private',
   })
-  visibility!: 'system' | 'public' | 'private';
+  visibility!: 'public' | 'private';
 
   @Prop({
     default: '',

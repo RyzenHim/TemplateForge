@@ -11,6 +11,9 @@ export function useCreateTemplate() {
       queryClient.invalidateQueries({
         queryKey: ["templates"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["public-templates"],
+      });
     },
   });
 }

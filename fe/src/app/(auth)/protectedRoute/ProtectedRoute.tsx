@@ -29,5 +29,5 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isError) {
     return null;
   }
-  return <>{children}</>;
+  return <div className="min-h-screen w-full flex-1">{children}</div>;
 }

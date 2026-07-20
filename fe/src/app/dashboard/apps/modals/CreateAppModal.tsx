@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,7 +11,10 @@ import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 
 import { useAppDispatch, useAppSelector } from "@/app/lib/redux/hook/hooks";
-import { setAppInfo } from "@/app/lib/redux/slices/createAppSlice";
+import {
+  resetCreateApp,
+  setAppInfo,
+} from "@/app/lib/redux/slices/createAppSlice";
 
 const createAppSchema = z.object({
   name: z
@@ -37,6 +41,12 @@ const createAppSchema = z.object({
 
 type CreateAppFormData = z.infer<typeof createAppSchema>;
 
+const emptyFormValues: CreateAppFormData = {
+  name: "",
+  description: "",
+  packageName: "",
+};
+
 interface CreateAppModalProps {
   open: boolean;
   onClose: () => void;
@@ -51,12 +61,25 @@ export default function CreateAppModal({ open, onClose }: CreateAppModalProps) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<CreateAppFormData>({
     resolver: zodResolver(createAppSchema),
     mode: "onBlur",
-    defaultValues: appInfo,
+    defaultValues: emptyFormValues,
   });
+
+  useEffect(() => {
+    if (!open) {
+      reset(emptyFormValues);
+    }
+  }, [open, reset]);
+
+  const handleClose = () => {
+    reset(emptyFormValues);
+    dispatch(resetCreateApp());
+    onClose();
+  };
 
   function onSubmit(data: CreateAppFormData) {
     dispatch(
@@ -66,15 +89,13 @@ export default function CreateAppModal({ open, onClose }: CreateAppModalProps) {
       }),
     );
 
-    onClose();
-
     router.push("/dashboard/apps/create");
   }
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       title="Create Application"
       description="Enter basic information to start creating your application."
     >
@@ -104,9 +125,9 @@ export default function CreateAppModal({ open, onClose }: CreateAppModalProps) {
         />
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>
+          {/* <Button type="button" variant="secondary" onClick={handleClose}>
             Cancel
-          </Button>
+          </Button> */}
 
           <Button type="submit">Continue</Button>
         </div>

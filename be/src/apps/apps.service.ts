@@ -23,8 +23,10 @@ export class AppsService {
       websiteUrl: app.websiteUrl,
       icon: app.icon,
       status: app.status,
-      owner: app.owner,
-      sourceTemplate: app.sourceTemplate?._id ? app.sourceTemplate._id.toString() : (app.sourceTemplate?.toString() || null),
+      owner: app.owner?.toString() || '',
+      sourceTemplate: app.sourceTemplate?._id
+        ? app.sourceTemplate._id.toString()
+        : app.sourceTemplate?.toString() || null,
       templateName: app.sourceTemplate?.name || 'None',
       branding: app.branding,
       splashScreen: app.splashScreen,
@@ -50,17 +52,21 @@ export class AppsService {
   }
 
   async findAll(userId: string) {
-    const apps = await this.appModel.find({
-      owner: new Types.ObjectId(userId),
-    }).populate('sourceTemplate');
+    const apps = await this.appModel
+      .find({
+        owner: new Types.ObjectId(userId),
+      })
+      .populate('sourceTemplate');
     return apps.map((app) => this.mapApp(app));
   }
 
   async findOne(id: string, userId: string) {
-    const app = await this.appModel.findOne({
-      _id: id,
-      owner: new Types.ObjectId(userId),
-    }).populate('sourceTemplate');
+    const app = await this.appModel
+      .findOne({
+        _id: id,
+        owner: new Types.ObjectId(userId),
+      })
+      .populate('sourceTemplate');
     if (!app) {
       throw new NotFoundException('App not found');
     }
@@ -68,16 +74,19 @@ export class AppsService {
   }
 
   async update(id: string, updateAppDto: UpdateAppDto, userId: string) {
-    const app = await this.appModel.findOneAndUpdate(
-      {
-        _id: id,
-        owner: new Types.ObjectId(userId),
-      },
-      updateAppDto,
-      {
-        new: true,
-      },
-    ).populate('sourceTemplate');
+    const app = await this.appModel
+      .findOneAndUpdate(
+        {
+          _id: id,
+          owner: new Types.ObjectId(userId),
+        },
+        updateAppDto,
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .populate('sourceTemplate');
     if (!app) {
       throw new NotFoundException('App not found');
     }

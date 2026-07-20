@@ -44,6 +44,7 @@ export default function LoginPage() {
     mutate(data, {
       onSuccess(response) {
         localStorage.setItem("token", response.accessToken);
+        localStorage.setItem("userId", response.user.id);
         showApiSuccess(response.message);
         // toast.success(response.message);
         // console.log("Token stored successfully");

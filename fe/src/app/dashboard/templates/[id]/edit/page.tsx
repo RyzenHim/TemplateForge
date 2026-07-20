@@ -10,64 +10,38 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  ImageIcon,
   Loader2,
-  MonitorSmartphone,
   Save,
   Sparkles,
-  Upload,
 } from "lucide-react";
 
 import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
-
-import { useApp } from "@/app/lib/hooks/app/useApp";
-import { useUpdateApp } from "@/app/lib/hooks/app/useUpdateApp";
+import { useTemplate } from "@/app/lib/hooks/template/useTemplate";
+import { useUpdateTemplate } from "@/app/lib/hooks/template/useUpdateTemplate";
 import { showApiError, showApiSuccess } from "@/app/lib/utils";
 
 const hexColor = z
   .string()
   .regex(/^#[0-9A-Fa-f]{6}$/, "Use a 6-digit hex colour, for example #4F46E5");
 
-const appEditorSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "App name must be at least 2 characters")
-    .max(50),
-  description: z
-    .string()
-    .trim()
-    .max(200, "Description cannot exceed 200 characters"),
-  packageName: z
-    .string()
-    .trim()
-    .regex(
-      /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/,
-      "Enter a valid Android package name",
-    ),
-  websiteUrl: z.union([
+const templateEditorSchema = z.object({
+  name: z.string().trim().min(1, "Template name is required").max(100),
+  description: z.string().trim().max(500),
+  visibility: z.enum(["public", "private"]),
+  thumbnail: z.union([
     z.literal(""),
-    z.string().url("Enter a valid website URL"),
+    z.string().url("Enter a valid thumbnail URL"),
   ]),
-  version: z
-    .string()
-    .trim()
-    .regex(/^$|^\d+\.\d+(\.\d+)?$/, "Use a version such as 1.0.0"),
-  icon: z.union([z.literal(""), z.string().url("Enter a valid icon URL")]),
+  category: z.string().trim(),
+  tags: z.array(z.string().trim().min(1)),
   branding: z.object({ primaryColor: hexColor }),
   splashScreen: z.object({
     type: z.enum(["animation", "logo", "image"]),
     animationJson: z.string(),
-    logoImage: z.union([
-      z.literal(""),
-      z.string().url("Enter a valid image URL"),
-    ]),
-    fullImage: z.union([
-      z.literal(""),
-      z.string().url("Enter a valid image URL"),
-    ]),
+    logoImage: z.string(),
+    fullImage: z.string(),
     backgroundColor: hexColor,
     playbackBehaviour: z.enum(["once", "loop"]),
   }),
@@ -91,15 +65,15 @@ const appEditorSchema = z.object({
   }),
 });
 
-type AppEditorValues = z.infer<typeof appEditorSchema>;
+type TemplateEditorValues = z.infer<typeof templateEditorSchema>;
 
-const editorDefaults: AppEditorValues = {
+const editorDefaults: TemplateEditorValues = {
   name: "",
   description: "",
-  packageName: "",
-  websiteUrl: "",
-  version: "1.0.0",
-  icon: "",
+  visibility: "private",
+  thumbnail: "",
+  category: "",
+  tags: [],
   branding: { primaryColor: "#4F46E5" },
   splashScreen: {
     type: "logo",
@@ -117,11 +91,11 @@ const editorDefaults: AppEditorValues = {
     notifications: false,
   },
   appSettings: {
-    statusBarColor: "#FFFFFF",
+    statusBarColor: "#000000",
     orientation: "portrait",
     fullScreen: false,
     systemNavigationBarColor: "#FFFFFF",
-    pinchToZoom: true,
+    pinchToZoom: false,
     callbackOnResume: false,
     disableCaching: false,
     kioskMode: false,
@@ -130,11 +104,11 @@ const editorDefaults: AppEditorValues = {
 };
 
 const permissions = [
-  ["camera", "Camera", "Allow the app to capture photos and video."],
-  ["microphone", "Microphone", "Allow the app to record audio."],
-  ["location", "Location", "Allow the app to access the device location."],
+  ["camera", "Camera", "Allow apps to capture photos and video."],
+  ["microphone", "Microphone", "Allow apps to record audio."],
+  ["location", "Location", "Allow apps to access the device location."],
   ["storage", "Storage", "Allow access to files and media."],
-  ["notifications", "Notifications", "Allow the app to send notifications."],
+  ["notifications", "Notifications", "Allow app notifications."],
 ] as const;
 
 const settingToggles = [
@@ -158,14 +132,13 @@ const settingToggles = [
   ],
 ] as const;
 
-export default function EditAppPage() {
+export default function EditTemplatePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
-  const { data: app, isLoading } = useApp(id);
-  const { mutate: updateApp, isPending: isUpdating } = useUpdateApp();
-
+  const { data: template, isLoading } = useTemplate(id);
+  const { mutate: updateTemplate, isPending: isUpdating } = useUpdateTemplate();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     basic: true,
     branding: true,
@@ -179,55 +152,57 @@ export default function EditAppPage() {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isDirty },
-  } = useForm<AppEditorValues>({
-    resolver: zodResolver(appEditorSchema),
+    formState: { errors },
+  } = useForm<TemplateEditorValues>({
+    resolver: zodResolver(templateEditorSchema),
     defaultValues: editorDefaults,
     mode: "onBlur",
   });
 
   useEffect(() => {
-    if (app) {
+    if (template) {
       reset({
-        name: app.name || "",
-        description: app.description || "",
-        packageName: app.packageName || "",
-        websiteUrl: app.websiteUrl || "",
-        version: app.version || "1.0.0",
-        icon: app.icon || "",
+        name: template.name || "",
+        description: template.description || "",
+        visibility: template.visibility || "private",
+        thumbnail: template.thumbnail || "",
+        category: template.category || "",
+        tags: template.tags || [],
         branding: {
-          primaryColor: app.branding?.primaryColor || "#4F46E5",
+          primaryColor: template.branding?.primaryColor || "#4F46E5",
         },
         splashScreen: {
-          type: app.splashScreen?.type || "logo",
-          animationJson: app.splashScreen?.animationJson || "",
-          logoImage: app.splashScreen?.logoImage || "",
-          fullImage: app.splashScreen?.fullImage || "",
-          backgroundColor: app.splashScreen?.backgroundColor || "#FFFFFF",
-          playbackBehaviour: app.splashScreen?.playbackBehaviour || "once",
+          type: template.splashScreen?.type || "logo",
+          animationJson: template.splashScreen?.animationJson || "",
+          logoImage: template.splashScreen?.logoImage || "",
+          fullImage: template.splashScreen?.fullImage || "",
+          backgroundColor: template.splashScreen?.backgroundColor || "#FFFFFF",
+          playbackBehaviour: template.splashScreen?.playbackBehaviour || "once",
         },
         appPermissions: {
-          camera: Boolean(app.appPermissions?.camera),
-          microphone: Boolean(app.appPermissions?.microphone),
-          location: Boolean(app.appPermissions?.location),
-          storage: Boolean(app.appPermissions?.storage),
-          notifications: Boolean(app.appPermissions?.notifications),
+          camera: Boolean(template.appPermissions?.camera),
+          microphone: Boolean(template.appPermissions?.microphone),
+          location: Boolean(template.appPermissions?.location),
+          storage: Boolean(template.appPermissions?.storage),
+          notifications: Boolean(template.appPermissions?.notifications),
         },
         appSettings: {
-          statusBarColor: app.appSettings?.statusBarColor || "#FFFFFF",
-          orientation: app.appSettings?.orientation || "portrait",
-          fullScreen: Boolean(app.appSettings?.fullScreen),
+          statusBarColor: template.appSettings?.statusBarColor || "#000000",
+          orientation: template.appSettings?.orientation || "portrait",
+          fullScreen: Boolean(template.appSettings?.fullScreen),
           systemNavigationBarColor:
-            app.appSettings?.systemNavigationBarColor || "#FFFFFF",
-          pinchToZoom: app.appSettings?.pinchToZoom !== false,
-          callbackOnResume: Boolean(app.appSettings?.callbackOnResume),
-          disableCaching: Boolean(app.appSettings?.disableCaching),
-          kioskMode: Boolean(app.appSettings?.kioskMode),
-          disableScrollBounce: Boolean(app.appSettings?.disableScrollBounce),
+            template.appSettings?.systemNavigationBarColor || "#FFFFFF",
+          pinchToZoom: template.appSettings?.pinchToZoom !== false,
+          callbackOnResume: Boolean(template.appSettings?.callbackOnResume),
+          disableCaching: Boolean(template.appSettings?.disableCaching),
+          kioskMode: Boolean(template.appSettings?.kioskMode),
+          disableScrollBounce: Boolean(
+            template.appSettings?.disableScrollBounce,
+          ),
         },
       });
     }
-  }, [app, reset]);
+  }, [template, reset]);
 
   const values = useWatch({ control }) ?? editorDefaults;
   const selectedPermissions = Object.values(values.appPermissions ?? {}).filter(
@@ -238,16 +213,13 @@ export default function EditAppPage() {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  function onSubmit(data: AppEditorValues) {
-    updateApp(
-      {
-        id,
-        data,
-      },
+  function onSubmit(data: TemplateEditorValues) {
+    updateTemplate(
+      { id, data },
       {
         onSuccess(response) {
           showApiSuccess(response.message);
-          router.push(`/dashboard/apps/${id}`);
+          router.push(`/dashboard/templates/${id}`);
         },
         onError(error) {
           showApiError(error);
@@ -263,7 +235,7 @@ export default function EditAppPage() {
   const labelClass = "text-sm font-medium text-zinc-800 dark:text-zinc-200";
 
   if (isLoading) {
-    return <Loader text="Loading application..." />;
+    return <Loader text="Loading template..." />;
   }
 
   return (
@@ -276,7 +248,7 @@ export default function EditAppPage() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => router.push(`/dashboard/apps/${id}`)}
+              onClick={() => router.push(`/dashboard/templates/${id}`)}
               className="rounded-lg p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
               aria-label="Back to details"
             >
@@ -284,7 +256,7 @@ export default function EditAppPage() {
             </button>
             <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                Edit application
+                Edit template
               </p>
               <h1 className="truncate text-xl font-bold text-zinc-950 dark:text-white">
                 {values.name || "Edit details"}
@@ -298,52 +270,42 @@ export default function EditAppPage() {
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-5">
             <p className="max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Edit configurations and capabilities for this application. Once
-              ready, click Save changes.
+              Update the template settings and defaults below. Changes will be
+              saved for this template.
             </p>
 
             <EditorSection
               title="Basic information"
-              description="Identity details for this application."
+              description="Identity details for this template."
               open={openSections.basic}
               onToggle={() => toggleSection("basic")}
             >
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="App name" error={errors.name?.message}>
+                <Field label="Template name" error={errors.name?.message}>
                   <input
                     className={inputClass}
-                    placeholder="Shopping App"
+                    placeholder="Starter Template"
                     {...register("name")}
                   />
                 </Field>
-                <Field
-                  label="Package name"
-                  hint="Cannot be modified"
-                  error={errors.packageName?.message}
-                >
-                  <input
-                    className={`${inputClass} bg-zinc-100 dark:bg-zinc-850 cursor-not-allowed`}
-                    placeholder="com.templateforge.shopping"
-                    disabled
-                    {...register("packageName")}
-                  />
+                <Field label="Visibility" error={errors.visibility?.message}>
+                  <select className={inputClass} {...register("visibility")}>
+                    <option value="private">Private</option>
+                    <option value="public">Public</option>
+                  </select>
                 </Field>
-                <Field
-                  label="Version"
-                  hint="For example, 1.0.0"
-                  error={errors.version?.message}
-                >
+                <Field label="Category" error={errors.category?.message}>
                   <input
                     className={inputClass}
-                    placeholder="1.0.0"
-                    {...register("version")}
+                    placeholder="E-commerce"
+                    {...register("category")}
                   />
                 </Field>
-                <Field label="Website URL" error={errors.websiteUrl?.message}>
+                <Field label="Thumbnail URL" error={errors.thumbnail?.message}>
                   <input
                     className={inputClass}
-                    placeholder="https://example.com"
-                    {...register("websiteUrl")}
+                    placeholder="https://.../thumb.png"
+                    {...register("thumbnail")}
                   />
                 </Field>
                 <div className="sm:col-span-2">
@@ -353,7 +315,7 @@ export default function EditAppPage() {
                   >
                     <textarea
                       className={`${inputClass} min-h-24 resize-y`}
-                      placeholder="A short description of your app"
+                      placeholder="Describe the template"
                       {...register("description")}
                     />
                   </Field>
@@ -363,29 +325,11 @@ export default function EditAppPage() {
 
             <EditorSection
               title="Branding"
-              description="Set the app icon and primary brand colour."
+              description="Set the template brand colour."
               open={openSections.branding}
               onToggle={() => toggleSection("branding")}
             >
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="App icon URL" error={errors.icon?.message}>
-                  <div className="mt-1.5 flex gap-2">
-                    <input
-                      className={inputClass.replace(
-                        "w-full ",
-                        "min-w-0 flex-1 ",
-                      )}
-                      placeholder="https://.../icon.png"
-                      {...register("icon")}
-                    />
-                    <button
-                      type="button"
-                      className="mt-1.5 inline-flex h-10 items-center gap-2 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-                    >
-                      <Upload size={16} /> Upload
-                    </button>
-                  </div>
-                </Field>
                 <Field
                   label="Primary colour"
                   error={errors.branding?.primaryColor?.message}
@@ -407,7 +351,7 @@ export default function EditAppPage() {
 
             <EditorSection
               title="Splash screen"
-              description="Choose how the app introduces itself while loading."
+              description="Choose how apps using this template introduce themselves while loading."
               open={openSections.splash}
               onToggle={() => toggleSection("splash")}
             >
@@ -509,8 +453,8 @@ export default function EditAppPage() {
             </EditorSection>
 
             <EditorSection
-              title="App permissions"
-              description="Enable only the capabilities your app genuinely needs."
+              title="Template permissions"
+              description="Enable only the capabilities your apps should inherit."
               open={openSections.permissions}
               onToggle={() => toggleSection("permissions")}
             >
@@ -533,8 +477,8 @@ export default function EditAppPage() {
             </EditorSection>
 
             <EditorSection
-              title="App settings"
-              description="Control the device and web-view behaviour."
+              title="Template settings"
+              description="Control the defaults for app behaviour."
               open={openSections.settings}
               onToggle={() => toggleSection("settings")}
             >
@@ -617,9 +561,9 @@ export default function EditAppPage() {
           </div>
 
           <aside className="sticky top-6 hidden space-y-5 lg:block">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <Card className="p-5">
               <h2 className="font-semibold text-zinc-950 dark:text-white">
-                Live Preview
+                Preview
               </h2>
               <div className="mt-4 flex flex-col items-center">
                 <div
@@ -646,17 +590,9 @@ export default function EditAppPage() {
                     </div>
                   </div>
                   <div className="flex flex-1 flex-col items-center justify-center p-3 text-center">
-                    {values.icon ? (
-                      <img
-                        src={values.icon}
-                        alt="Preview Icon"
-                        className="h-10 w-10 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="text-2xl">📱</div>
-                    )}
+                    <div className="text-2xl">🎨</div>
                     <span className="mt-2 block truncate text-[10px] font-bold text-zinc-900 dark:text-white">
-                      {values.name || "App Name"}
+                      {values.name || "Template"}
                     </span>
                   </div>
                   <div
@@ -668,14 +604,10 @@ export default function EditAppPage() {
                     }}
                   />
                 </div>
-                <div className="mt-6 space-y-3 text-sm w-full">
+                <div className="mt-6 w-full space-y-3 text-sm">
                   <PreviewItem
-                    label="Package"
-                    value={values.packageName || "Not set"}
-                  />
-                  <PreviewItem
-                    label="Version"
-                    value={values.version || "Not set"}
+                    label="Visibility"
+                    value={values.visibility || "private"}
                   />
                   <PreviewItem
                     label="Orientation"
@@ -688,7 +620,7 @@ export default function EditAppPage() {
                   />
                 </div>
               </div>
-            </div>
+            </Card>
           </aside>
         </div>
       </main>
@@ -697,7 +629,7 @@ export default function EditAppPage() {
         <div className="mx-auto flex max-w-7xl flex-col-reverse gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <button
             type="button"
-            onClick={() => router.push(`/dashboard/apps/${id}`)}
+            onClick={() => router.push(`/dashboard/templates/${id}`)}
             className="rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
             Cancel
@@ -764,12 +696,10 @@ function EditorSection({
 
 function Field({
   label,
-  hint,
   error,
   children,
 }: {
   label: string;
-  hint?: string;
   error?: string;
   children: ReactNode;
 }) {
@@ -778,13 +708,10 @@ function Field({
       <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
         {label}
       </span>
-      {hint && <span className="ml-2 text-xs text-zinc-500">{hint}</span>}
       {children}
-      {error && (
-        <span className="mt-1.5 block text-xs font-medium text-red-600 dark:text-red-400">
-          {error}
-        </span>
-      )}
+      {error ? (
+        <span className="mt-1.5 block text-xs text-red-500">{error}</span>
+      ) : null}
     </label>
   );
 }
@@ -802,24 +729,17 @@ function ToggleCard({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-start justify-between gap-4 rounded-xl border p-4 transition ${checked ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"}`}
+      className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition ${checked ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"}`}
     >
-      <span>
-        <span className="block text-sm font-semibold text-zinc-900 dark:text-white">
+      <div className="pr-3">
+        <p className="text-sm font-semibold text-zinc-900 dark:text-white">
           {title}
-        </span>
-        <span className="mt-1 block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+        </p>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           {description}
-        </span>
-      </span>
-      <span
-        className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 rounded-full transition ${checked ? "bg-indigo-600" : "bg-zinc-300 dark:bg-zinc-600"}`}
-      >
-        {children}
-        <span
-          className={`pointer-events-none absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${checked ? "left-4" : "left-0.5"}`}
-        />
-      </span>
+        </p>
+      </div>
+      {children}
     </label>
   );
 }
@@ -834,10 +754,10 @@ function PreviewItem({
   capitalized?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex items-center justify-between rounded-lg border border-zinc-200/70 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/40">
       <span className="text-zinc-500 dark:text-zinc-400">{label}</span>
       <span
-        className={`max-w-40 truncate text-right font-medium text-zinc-900 dark:text-white ${capitalized ? "capitalize" : ""}`}
+        className={`font-medium text-zinc-950 dark:text-zinc-50 ${capitalized ? "capitalize" : ""}`}
       >
         {value}
       </span>

@@ -6,10 +6,11 @@ export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex">
+    <div className="min-h-screen w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950">
       <Sidebar />
-      {/* <Navbar /> */}
-      <ProtectedRoute>{children}</ProtectedRoute>
+      <main className="ml-72 min-h-screen overflow-y-auto overflow-x-hidden">
+        <ProtectedRoute>{children}</ProtectedRoute>
+      </main>
     </div>
   );
 }

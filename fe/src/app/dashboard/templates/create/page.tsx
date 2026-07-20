@@ -80,7 +80,11 @@ const createTemplateSchema = z.object({
 type CreateTemplateFormData = z.infer<typeof createTemplateSchema>;
 
 const permissions = [
-  ["camera", "Camera", "Allow apps built from this template to capture photos and video."],
+  [
+    "camera",
+    "Camera",
+    "Allow apps built from this template to capture photos and video.",
+  ],
   ["microphone", "Microphone", "Allow apps to record audio."],
   ["location", "Location", "Allow apps to access the device location."],
   ["storage", "Storage", "Allow access to files and media."],
@@ -192,7 +196,10 @@ export default function CreateTemplatePage() {
   function addTag(raw: string) {
     const tag = raw.trim();
     if (!tag || tags.includes(tag)) return;
-    setValue("tags", [...tags, tag], { shouldValidate: true, shouldDirty: true });
+    setValue("tags", [...tags, tag], {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     setTagInput("");
   }
 
@@ -244,10 +251,10 @@ export default function CreateTemplatePage() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="min-h-screen bg-zinc-50 pb-28 dark:bg-zinc-950"
+      className="min-h-screen w-full bg-zinc-50 pb-28 dark:bg-zinc-950"
     >
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 pl-6 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
@@ -273,7 +280,9 @@ export default function CreateTemplatePage() {
                 : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
             }`}
           >
-            {values.visibility === "public" ? "Public template" : "Private template"}
+            {values.visibility === "public"
+              ? "Public template"
+              : "Private template"}
           </span>
         </div>
       </header>
@@ -282,8 +291,9 @@ export default function CreateTemplatePage() {
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-5">
             <p className="max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Configure a reusable blueprint for future applications. Fields marked
-              with <span className="text-red-500">*</span> are required by the API.
+              Configure a reusable blueprint for future applications. Fields
+              marked with <span className="text-red-500">*</span> are required
+              by the API.
             </p>
 
             <EditorSection
@@ -293,7 +303,11 @@ export default function CreateTemplatePage() {
               onToggle={() => toggleSection("basic")}
             >
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Template name" required error={errors.name?.message}>
+                <Field
+                  label="Template name"
+                  required
+                  error={errors.name?.message}
+                >
                   <input
                     className={inputClass}
                     placeholder="E-commerce starter"
@@ -308,7 +322,10 @@ export default function CreateTemplatePage() {
                   />
                 </Field>
                 <div className="sm:col-span-2">
-                  <Field label="Description" error={errors.description?.message}>
+                  <Field
+                    label="Description"
+                    error={errors.description?.message}
+                  >
                     <textarea
                       className={`${inputClass} min-h-24 resize-y`}
                       placeholder="What kind of apps is this template best suited for?"
@@ -380,13 +397,15 @@ export default function CreateTemplatePage() {
                         {
                           value: "private" as const,
                           label: "Private",
-                          description: "Only you can see and use this template.",
+                          description:
+                            "Only you can see and use this template.",
                           icon: Lock,
                         },
                         {
                           value: "public" as const,
                           label: "Public",
-                          description: "Visible in the public template gallery.",
+                          description:
+                            "Visible in the public template gallery.",
                           icon: Globe,
                         },
                       ] as const
@@ -434,12 +453,25 @@ export default function CreateTemplatePage() {
                   <input
                     type="color"
                     className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                    {...register("branding.primaryColor")}
+                    value={values.branding?.primaryColor || "#4F46E5"}
+                    onChange={(event) =>
+                      setValue("branding.primaryColor", event.target.value, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
                   />
                   <input
                     className={`${inputClass} mt-0`}
                     placeholder="#4F46E5"
                     {...register("branding.primaryColor")}
+                    value={values.branding?.primaryColor || "#4F46E5"}
+                    onChange={(event) =>
+                      setValue("branding.primaryColor", event.target.value, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
                   />
                 </div>
               </Field>
@@ -522,11 +554,36 @@ export default function CreateTemplatePage() {
                       <input
                         type="color"
                         className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                        {...register("splashScreen.backgroundColor")}
+                        value={
+                          values.splashScreen?.backgroundColor || "#FFFFFF"
+                        }
+                        onChange={(event) =>
+                          setValue(
+                            "splashScreen.backgroundColor",
+                            event.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("splashScreen.backgroundColor")}
+                        value={
+                          values.splashScreen?.backgroundColor || "#FFFFFF"
+                        }
+                        onChange={(event) =>
+                          setValue(
+                            "splashScreen.backgroundColor",
+                            event.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                     </div>
                   </Field>
@@ -594,28 +651,78 @@ export default function CreateTemplatePage() {
                       <input
                         type="color"
                         className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                        {...register("appSettings.statusBarColor")}
+                        value={values.appSettings?.statusBarColor || "#000000"}
+                        onChange={(event) =>
+                          setValue(
+                            "appSettings.statusBarColor",
+                            event.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("appSettings.statusBarColor")}
+                        value={values.appSettings?.statusBarColor || "#000000"}
+                        onChange={(event) =>
+                          setValue(
+                            "appSettings.statusBarColor",
+                            event.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                     </div>
                   </Field>
                   <Field
                     label="System navigation bar colour"
                     required
-                    error={errors.appSettings?.systemNavigationBarColor?.message}
+                    error={
+                      errors.appSettings?.systemNavigationBarColor?.message
+                    }
                   >
                     <div className="mt-1.5 flex items-center gap-3">
                       <input
                         type="color"
                         className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                        {...register("appSettings.systemNavigationBarColor")}
+                        value={
+                          values.appSettings?.systemNavigationBarColor ||
+                          "#FFFFFF"
+                        }
+                        onChange={(event) =>
+                          setValue(
+                            "appSettings.systemNavigationBarColor",
+                            event.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("appSettings.systemNavigationBarColor")}
+                        value={
+                          values.appSettings?.systemNavigationBarColor ||
+                          "#FFFFFF"
+                        }
+                        onChange={(event) =>
+                          setValue(
+                            "appSettings.systemNavigationBarColor",
+                            event.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                     </div>
                   </Field>
@@ -771,8 +878,8 @@ export default function CreateTemplatePage() {
         </div>
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
-        <div className="mx-auto flex max-w-7xl flex-col-reverse gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <footer className="fixed left-64 right-0 bottom-0 z-20 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
+        <div className="mx-auto flex max-w-7xl flex-col-reverse gap-3 px-4 py-4 pl-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <button
             type="button"
             onClick={() => router.push("/dashboard/templates")}

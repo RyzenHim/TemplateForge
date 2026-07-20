@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 
 import Button from "@/app/components/ui/Button";
@@ -14,8 +13,23 @@ import CreateAppModal from "./modals/CreateAppModal";
 
 export default function AppsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: apps = [], isLoading, isError } = useApps();
+
+  const filteredApps = useMemo(() => {
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+
+    if (!normalizedQuery) return apps;
+
+    return apps.filter((app) => {
+      const haystacks = [app.name, app.description, app.packageName]
+        .filter(Boolean)
+        .map((value) => value.toLowerCase());
+
+      return haystacks.some((value) => value.includes(normalizedQuery));
+    });
+  }, [apps, searchTerm]);
 
   if (isLoading) {
     return <Loader text="Loading your apps..." />;
@@ -36,7 +50,7 @@ export default function AppsPage() {
         onClose={() => setIsCreateModalOpen(false)}
       />
 
-      <div className="space-y-8 p-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-3xl font-bold">My Apps</h1>
@@ -61,7 +75,9 @@ export default function AppsPage() {
             />
 
             <input
-              className="w-full rounded-lg border py-3 pl-11 pr-4"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="w-full rounded-lg border border-zinc-300 py-3 pl-11 pr-4 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
               placeholder="Search apps..."
             />
           </div>
@@ -84,9 +100,17 @@ export default function AppsPage() {
               </Button>
             </div>
           </Card>
+        ) : filteredApps.length === 0 ? (
+          <Card>
+            <div className="py-20 text-center">
+              <h2 className="text-2xl font-semibold">No matching apps</h2>
+
+              <p className="mt-3 text-zinc-500">Try a different search term.</p>
+            </div>
+          </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {apps.map((app) => (
+            {filteredApps.map((app) => (
               <AppCard key={app.id} app={app} />
             ))}
           </div>

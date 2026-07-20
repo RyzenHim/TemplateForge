@@ -46,6 +46,7 @@ export class TemplatesController {
     return this.templateService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -55,6 +56,7 @@ export class TemplatesController {
     return this.templateService.update(id, req.user.id, updateTemplateDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.templateService.remove(id, req.user.id);

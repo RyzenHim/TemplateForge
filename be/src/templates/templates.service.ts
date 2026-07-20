@@ -22,7 +22,7 @@ export class TemplatesService {
       thumbnail: template.thumbnail,
       category: template.category,
       tags: template.tags,
-      owner: template.owner,
+      owner: template.owner?.toString() || '',
       branding: template.branding,
       splashScreen: template.splashScreen,
       appPermissions: template.appPermissions,
@@ -83,6 +83,7 @@ export class TemplatesService {
       updateTemplateDto,
       {
         new: true,
+        runValidators: true,
       },
     );
 

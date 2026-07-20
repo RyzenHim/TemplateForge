@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Eye, Pencil } from "lucide-react";
 
 import Card from "@/app/components/ui/Card";
 import type { Template } from "@/app/lib/types/template.types";
@@ -23,6 +24,9 @@ export default function TemplateCard({
   actionLabel = "Use template",
 }: TemplateCardProps) {
   const visibleTags = template.tags?.slice(0, 3) ?? [];
+  const currentUserId =
+    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+  const canEdit = currentUserId && template.owner === currentUserId;
 
   return (
     <Card className="group flex h-full flex-col transition-all duration-200 hover:-translate-y-1 hover:border-indigo-500/50 hover:shadow-xl">
@@ -77,17 +81,27 @@ export default function TemplateCard({
         ))}
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-800">
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
         <span className="text-xs text-zinc-500 dark:text-zinc-400">
           Updated {formatUpdatedAt(template.updatedAt)}
         </span>
 
-        <Link
-          href={actionHref}
-          className="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-        >
-          {actionLabel} →
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/dashboard/templates/${template.id}`}
+            className="inline-flex items-center gap-1 text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            <Eye size={14} /> View
+          </Link>
+          {canEdit ? (
+            <Link
+              href={`/dashboard/templates/${template.id}/edit`}
+              className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            >
+              <Pencil size={14} /> Edit
+            </Link>
+          ) : null}
+        </div>
       </div>
     </Card>
   );

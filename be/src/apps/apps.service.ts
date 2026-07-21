@@ -86,19 +86,27 @@ export class AppsService {
   }
 
   async update(id: string, updateAppDto: UpdateAppDto, userId: string) {
-    const app = await this.appModel
-      .findOneAndUpdate(
-        {
-          _id: id,
-          owner: new Types.ObjectId(userId),
-        },
-        updateAppDto,
-        {
-          new: true,
-          runValidators: true,
-        },
-      )
-      .populate('sourceTemplate');
+    let app: AppDocument | null;
+    try {
+      app = await this.appModel
+        .findOneAndUpdate(
+          {
+            _id: id,
+            owner: new Types.ObjectId(userId),
+          },
+          updateAppDto,
+          {
+            new: true,
+            runValidators: true,
+          },
+        )
+        .populate('sourceTemplate');
+    } catch (error: any) {
+      if (error?.code === 11000) {
+        throw new ConflictException('Package name already exists');
+      }
+      throw error;
+    }
     if (!app) {
       throw new NotFoundException('App not found');
     }

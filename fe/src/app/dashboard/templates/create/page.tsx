@@ -484,13 +484,6 @@ export default function CreateTemplatePage() {
                     className={`${inputClass} mt-0`}
                     placeholder="#4F46E5"
                     {...register("branding.primaryColor")}
-                    value={values.branding?.primaryColor || "#4F46E5"}
-                    onChange={(event) =>
-                      setValue("branding.primaryColor", event.target.value, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      })
-                    }
                   />
                 </div>
               </Field>
@@ -597,19 +590,6 @@ export default function CreateTemplatePage() {
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("splashScreen.backgroundColor")}
-                        value={
-                          values.splashScreen?.backgroundColor || "#FFFFFF"
-                        }
-                        onChange={(event) =>
-                          setValue(
-                            "splashScreen.backgroundColor",
-                            event.target.value,
-                            {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            },
-                          )
-                        }
                       />
                     </div>
                   </Field>
@@ -692,17 +672,6 @@ export default function CreateTemplatePage() {
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("appSettings.statusBarColor")}
-                        value={values.appSettings?.statusBarColor || "#000000"}
-                        onChange={(event) =>
-                          setValue(
-                            "appSettings.statusBarColor",
-                            event.target.value,
-                            {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            },
-                          )
-                        }
                       />
                     </div>
                   </Field>
@@ -735,20 +704,6 @@ export default function CreateTemplatePage() {
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("appSettings.systemNavigationBarColor")}
-                        value={
-                          values.appSettings?.systemNavigationBarColor ||
-                          "#FFFFFF"
-                        }
-                        onChange={(event) =>
-                          setValue(
-                            "appSettings.systemNavigationBarColor",
-                            event.target.value,
-                            {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            },
-                          )
-                        }
                       />
                     </div>
                   </Field>

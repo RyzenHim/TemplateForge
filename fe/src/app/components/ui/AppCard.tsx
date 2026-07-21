@@ -52,7 +52,7 @@ export default function AppCard({ app }: AppCardProps) {
           )}
         </div>
 
-        <span className="shrink-0 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium capitalize text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+        <span className="shrink-0 rounded-full border border-zinc-200 bg-gray-900 px-3 py-1 text-xs font-medium capitalize text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
           {app.status || "active"}
         </span>
       </div>
@@ -77,33 +77,34 @@ export default function AppCard({ app }: AppCardProps) {
         <span className="text-xs text-zinc-500 dark:text-zinc-400">
           Updated {formatUpdatedAt(app.updatedAt)}
         </span>
-        <Button
-          type="button"
-          disabled={isDeleting}
-          onClick={() => {
-            const ok = window.confirm(`Delete app "${app.name}"?`);
-            if (!ok) return;
-
-            setIsDeleting(true);
-            deleteApp(app.id, {
-              onSuccess: async () => {
-                await queryClient.refetchQueries({ queryKey: ["apps"] });
-                setIsDeleting(false);
-              },
-              onError: () => {
-                setIsDeleting(false);
-                window.alert("Failed to delete app.");
-              },
-            });
-          }}
-          className="inline-flex items-center gap-1 text-sm font-medium text-red-600 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
-          aria-label={`Delete app ${app.name}`}
-        >
-          <Trash2 size={16} />
-          {isDeleting ? "Deleting…" : "Delete"}
-        </Button>
-
         <div className="flex gap-3 items-center">
+          <Button
+            variant="delete"
+            type="button"
+            disabled={isDeleting}
+            onClick={() => {
+              const ok = window.confirm(`Delete app "${app.name}"?`);
+              if (!ok) return;
+
+              setIsDeleting(true);
+              deleteApp(app.id, {
+                onSuccess: async () => {
+                  await queryClient.refetchQueries({ queryKey: ["apps"] });
+                  setIsDeleting(false);
+                },
+                onError: () => {
+                  setIsDeleting(false);
+                  window.alert("Failed to delete app.");
+                },
+              });
+            }}
+            className="inline-flex items-center gap-1  text-sm font-medium text-red-600 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-400 dark:hover:text-red-300"
+            aria-label={`Delete app ${app.name}`}
+          >
+            <Trash2 size={16} />
+            {isDeleting ? "Deleting…" : "Delete"}
+          </Button>
+
           <Link
             href={`/dashboard/apps/${app.id}/edit`}
             className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"

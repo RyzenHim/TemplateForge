@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -22,16 +28,15 @@ import { useAppDispatch, useAppSelector } from "@/app/lib/redux/hook/hooks";
 import {
   resetCreateApp,
   setTemplateId,
+  updateAppInfo,
 } from "@/app/lib/redux/slices/createAppSlice";
 import { useCreateApp } from "@/app/lib/hooks/app/useCreateApp";
-// import { useApps } from "@/app/lib/hooks/app/useApps";
-// import type { App } from "@/app/lib/types/app.types";
 import { useCreateTemplate } from "@/app/lib/hooks/template/useCreateTemplate";
 import { usePublicTemplates } from "@/app/lib/hooks/template/usePublicTemplates";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
 import type { Template } from "@/app/lib/types/template.types";
 import Modal from "@/app/components/ui/Modal";
-import { showApiError } from "@/app/lib/utils";
+import { getApiErrorMessage, showApiError } from "@/app/lib/utils";
 
 const hexColor = z
   .string()
@@ -62,10 +67,7 @@ const appEditorSchema = z.object({
       /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/,
       "Enter a valid Android package name",
     ),
-  websiteUrl: z.union([
-    z.literal(""),
-    z.string().url("Enter a valid website URL"),
-  ]),
+  websiteUrl: z.union([z.literal(""), z.url("Enter a valid website URL")]),
   version: z
     .string()
     .trim()
@@ -181,18 +183,14 @@ const settingToggles = [
   ],
 ] as const;
 
-/**
- * App editor for /dashboard/apps/create.
- *
- * The CreateAppModal stores the initial appInfo/templateId in Redux. This page
- * starts from that draft, lets the user customise it, and creates the app only
- * from the final submitted payload.
- */
 export default function CreateAppPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const draft = useAppSelector((state) => state.createApp);
+
   const { mutate: createApp, isPending: isCreating } = useCreateApp();
+
+  // console.log("createApp", createApp);
   const { mutate: createTemplate, isPending: isCreatingTemplate } =
     useCreateTemplate();
 
@@ -229,6 +227,8 @@ export default function CreateAppPage() {
     reset,
     getValues,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<AppEditorValues>({
     resolver: zodResolver(appEditorSchema),
@@ -271,18 +271,18 @@ export default function CreateAppPage() {
   });
 
   const values = useWatch({ control }) ?? reduxDefaults;
-  console.log("on the create app page");
-  console.log("Splash Type:", values.splashScreen?.type);
-  console.log("Orientation:", values.appSettings?.orientation);
+  // console.log("on the create app page");
+  // console.log("Splash Type:", values.splashScreen?.type);
+  // console.log("Orientation:", values.appSettings?.orientation);
 
   // Reset the form only when the editor is first mounted from the modal draft.
   // This prevents overwriting splash/orientation selections while the user edits.
   const [hasHydrated, setHasHydrated] = useState(false);
-  useEffect(() => {
-    if (hasHydrated) return;
-    reset(reduxDefaults);
-    setHasHydrated(true);
-  }, [hasHydrated, reduxDefaults, reset]);
+  // useEffect(() => {
+  //   if (hasHydrated) return;
+  //   reset(reduxDefaults);
+  //   setHasHydrated(true);
+  // }, [hasHydrated, reduxDefaults, reset]);
 
   useEffect(() => {
     if (!isSaveTemplateModalOpen) return;
@@ -372,31 +372,58 @@ export default function CreateAppPage() {
     setIsImportModalOpen(false);
   }
 
-  function onSubmit(formData: AppEditorValues) {
-    const appPayload = {
-      name: formData.name,
-      description: formData.description || undefined,
-      packageName: formData.packageName,
-      version: formData.version || undefined,
-      websiteUrl: formData.websiteUrl || undefined,
-      icon: formData.icon || undefined,
-      templateId: draft.templateId ?? undefined,
-      branding: cloneValue(formData.branding),
-      splashScreen: cloneValue(formData.splashScreen),
-      appPermissions: cloneValue(formData.appPermissions),
-      appSettings: cloneValue(formData.appSettings),
-    };
+  const onSubmit = useCallback(
+    (formData: AppEditorValues) => {
+      const onSubmit = (formData: AppEditorValues) => {
+        console.log("===== SUBMIT =====");
+        console.log("formData", formData);
+        console.log("getValues()", getValues());
+        console.log("watch values", values);
+      };
+      const appPayload = {
+        name: formData.name,
+        description: formData.description || undefined,
+        packageName: formData.packageName,
+        version: formData.version || undefined,
+        websiteUrl: formData.websiteUrl || undefined,
+        icon: formData.icon || undefined,
+        templateId: draft.templateId ?? undefined,
+        branding: cloneValue(formData.branding),
+        splashScreen: cloneValue(formData.splashScreen),
+        appPermissions: cloneValue(formData.appPermissions),
+        appSettings: cloneValue(formData.appSettings),
+      };
+      console.log("formData.packageName:", formData.packageName);
+      console.log("getValues.packageName:", getValues("packageName"));
+      console.log("watch.packageName:", values.packageName);
+      console.log("appPayload", appPayload);
 
-    createApp(appPayload, {
-      onSuccess: () => {
-        dispatch(resetCreateApp());
-        router.push("/dashboard/apps");
-      },
-      onError: (error) => {
-        showApiError(error);
-      },
-    });
-  }
+      createApp(appPayload, {
+        onSuccess: () => {
+          dispatch(resetCreateApp());
+          router.push("/dashboard/apps");
+        },
+        onError: (error) => {
+          const message = getApiErrorMessage(error);
+
+          if (message && /package name/i.test(message)) {
+            setError("packageName", {
+              type: "server",
+              message,
+            });
+
+            setOpenSections((current) => ({
+              ...current,
+              basic: true,
+            }));
+          }
+
+          showApiError(error);
+        },
+      });
+    },
+    [draft.templateId, createApp, dispatch, router, setError, setOpenSections],
+  );
 
   function onSaveTemplateSubmit(data: SaveTemplateFormData) {
     const templatePayload = {
@@ -453,6 +480,31 @@ export default function CreateAppPage() {
   const inputClass =
     "mt-1.5 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white";
   const labelClass = "text-sm font-medium text-zinc-800 dark:text-zinc-200";
+
+  const [name, packageName, description] = useWatch({
+    control,
+    name: ["name", "packageName", "description"],
+  });
+
+  useEffect(() => {
+    dispatch(
+      updateAppInfo({
+        name,
+        packageName,
+        description,
+      }),
+    );
+  }, [name, packageName, description, dispatch]);
+  useEffect(() => {
+    if (hasHydrated) return;
+    console.trace("HYDRATING — reset called with:", reduxDefaults.packageName);
+    reset(reduxDefaults);
+    setHasHydrated(true);
+  }, [hasHydrated, reduxDefaults, reset]);
+
+  useEffect(() => {
+    // console.log("Redux AppInfo:", draft.appInfo);
+  }, [draft.appInfo]);
 
   return (
     <>
@@ -698,7 +750,7 @@ export default function CreateAppPage() {
                       {...register("name")}
                     />
                   </Field>
-                  <Field
+                  {/* <Field
                     label="Package name"
                     error={errors.packageName?.message}
                   >
@@ -706,6 +758,28 @@ export default function CreateAppPage() {
                       className={inputClass}
                       placeholder="com.templateforge.shopping"
                       {...register("packageName")}
+                    />
+                  </Field> */}
+
+                  <Field
+                    label="Package name"
+                    error={errors.packageName?.message}
+                  >
+                    <input
+                      className={inputClass}
+                      placeholder="com.templateforge.shopping"
+                      {...register("packageName", {
+                        onChange: () => clearErrors("packageName"),
+                      })}
+                      // {...register("packageName", {
+                      //   onChange: (e) => {
+                      //     console.log(
+                      //       "packageName onChange fired, DOM value:",
+                      //       e.target.value,
+                      //     );
+                      //     clearErrors("packageName");
+                      //   },
+                      // })}
                     />
                   </Field>
                   <Field
@@ -794,17 +868,6 @@ export default function CreateAppPage() {
                       <input
                         className={`${inputClass} mt-0`}
                         {...register("branding.primaryColor")}
-                        value={values.branding?.primaryColor || "#4F46E5"}
-                        onChange={(event) =>
-                          setValue(
-                            "branding.primaryColor",
-                            event.target.value,
-                            {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            },
-                          )
-                        }
                       />
                     </div>
                   </Field>
@@ -910,19 +973,6 @@ export default function CreateAppPage() {
                         <input
                           className={`${inputClass} mt-0`}
                           {...register("splashScreen.backgroundColor")}
-                          value={
-                            values.splashScreen?.backgroundColor || "#FFFFFF"
-                          }
-                          onChange={(event) =>
-                            setValue(
-                              "splashScreen.backgroundColor",
-                              event.target.value,
-                              {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              },
-                            )
-                          }
                         />
                       </div>
                     </Field>
@@ -1006,19 +1056,6 @@ export default function CreateAppPage() {
                         <input
                           className={`${inputClass} mt-0`}
                           {...register("appSettings.statusBarColor")}
-                          value={
-                            values.appSettings?.statusBarColor || "#FFFFFF"
-                          }
-                          onChange={(event) =>
-                            setValue(
-                              "appSettings.statusBarColor",
-                              event.target.value,
-                              {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              },
-                            )
-                          }
                         />
                       </div>
                     </Field>
@@ -1050,20 +1087,6 @@ export default function CreateAppPage() {
                         <input
                           className={`${inputClass} mt-0`}
                           {...register("appSettings.systemNavigationBarColor")}
-                          value={
-                            values.appSettings?.systemNavigationBarColor ||
-                            "#FFFFFF"
-                          }
-                          onChange={(event) =>
-                            setValue(
-                              "appSettings.systemNavigationBarColor",
-                              event.target.value,
-                              {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              },
-                            )
-                          }
                         />
                       </div>
                     </Field>

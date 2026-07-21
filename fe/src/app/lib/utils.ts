@@ -10,12 +10,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 
-export function showApiError(error: unknown) {
+export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    toast.error(error.response?.data?.message ?? "Something went wrong");
-    return;
+    return error.response?.data?.message ?? "Something went wrong";
   }
-  toast.error("Something went wrong");
+  return "Something went wrong";
+}
+
+export function showApiError(error: unknown) {
+  toast.error(getApiErrorMessage(error));
 }
 
 

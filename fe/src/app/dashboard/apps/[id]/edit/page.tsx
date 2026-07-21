@@ -24,7 +24,11 @@ import Loader from "@/app/components/ui/Loader";
 
 import { useApp } from "@/app/lib/hooks/app/useApp";
 import { useUpdateApp } from "@/app/lib/hooks/app/useUpdateApp";
-import { showApiError, showApiSuccess } from "@/app/lib/utils";
+import {
+  showApiError,
+  showApiSuccess,
+  getApiErrorMessage,
+} from "@/app/lib/utils";
 
 const hexColor = z
   .string()
@@ -180,6 +184,8 @@ export default function EditAppPage() {
     handleSubmit,
     reset,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors, isDirty },
   } = useForm<AppEditorValues>({
     resolver: zodResolver(appEditorSchema),
@@ -187,48 +193,51 @@ export default function EditAppPage() {
     mode: "onBlur",
   });
 
+  // Hydrate the form once from the API data; prevent refetches from
+  // overwriting user edits while the form is open.
+  const [hasHydrated, setHasHydrated] = useState(false);
   useEffect(() => {
-    if (app) {
-      reset({
-        name: app.name || "",
-        description: app.description || "",
-        packageName: app.packageName || "",
-        websiteUrl: app.websiteUrl || "",
-        version: app.version || "1.0.0",
-        icon: app.icon || "",
-        branding: {
-          primaryColor: app.branding?.primaryColor || "#4F46E5",
-        },
-        splashScreen: {
-          type: app.splashScreen?.type || "logo",
-          animationJson: app.splashScreen?.animationJson || "",
-          logoImage: app.splashScreen?.logoImage || "",
-          fullImage: app.splashScreen?.fullImage || "",
-          backgroundColor: app.splashScreen?.backgroundColor || "#FFFFFF",
-          playbackBehaviour: app.splashScreen?.playbackBehaviour || "once",
-        },
-        appPermissions: {
-          camera: Boolean(app.appPermissions?.camera),
-          microphone: Boolean(app.appPermissions?.microphone),
-          location: Boolean(app.appPermissions?.location),
-          storage: Boolean(app.appPermissions?.storage),
-          notifications: Boolean(app.appPermissions?.notifications),
-        },
-        appSettings: {
-          statusBarColor: app.appSettings?.statusBarColor || "#FFFFFF",
-          orientation: app.appSettings?.orientation || "portrait",
-          fullScreen: Boolean(app.appSettings?.fullScreen),
-          systemNavigationBarColor:
-            app.appSettings?.systemNavigationBarColor || "#FFFFFF",
-          pinchToZoom: app.appSettings?.pinchToZoom !== false,
-          callbackOnResume: Boolean(app.appSettings?.callbackOnResume),
-          disableCaching: Boolean(app.appSettings?.disableCaching),
-          kioskMode: Boolean(app.appSettings?.kioskMode),
-          disableScrollBounce: Boolean(app.appSettings?.disableScrollBounce),
-        },
-      });
-    }
-  }, [app, reset]);
+    if (!app || hasHydrated) return;
+    reset({
+      name: app.name || "",
+      description: app.description || "",
+      packageName: app.packageName || "",
+      websiteUrl: app.websiteUrl || "",
+      version: app.version || "1.0.0",
+      icon: app.icon || "",
+      branding: {
+        primaryColor: app.branding?.primaryColor || "#4F46E5",
+      },
+      splashScreen: {
+        type: app.splashScreen?.type || "logo",
+        animationJson: app.splashScreen?.animationJson || "",
+        logoImage: app.splashScreen?.logoImage || "",
+        fullImage: app.splashScreen?.fullImage || "",
+        backgroundColor: app.splashScreen?.backgroundColor || "#FFFFFF",
+        playbackBehaviour: app.splashScreen?.playbackBehaviour || "once",
+      },
+      appPermissions: {
+        camera: Boolean(app.appPermissions?.camera),
+        microphone: Boolean(app.appPermissions?.microphone),
+        location: Boolean(app.appPermissions?.location),
+        storage: Boolean(app.appPermissions?.storage),
+        notifications: Boolean(app.appPermissions?.notifications),
+      },
+      appSettings: {
+        statusBarColor: app.appSettings?.statusBarColor || "#FFFFFF",
+        orientation: app.appSettings?.orientation || "portrait",
+        fullScreen: Boolean(app.appSettings?.fullScreen),
+        systemNavigationBarColor:
+          app.appSettings?.systemNavigationBarColor || "#FFFFFF",
+        pinchToZoom: app.appSettings?.pinchToZoom !== false,
+        callbackOnResume: Boolean(app.appSettings?.callbackOnResume),
+        disableCaching: Boolean(app.appSettings?.disableCaching),
+        kioskMode: Boolean(app.appSettings?.kioskMode),
+        disableScrollBounce: Boolean(app.appSettings?.disableScrollBounce),
+      },
+    });
+    setHasHydrated(true);
+  }, [app, hasHydrated, reset]);
 
   const values = useWatch({ control }) ?? editorDefaults;
   // console.log("splash screen", values.splashScreen.type);
@@ -254,6 +263,14 @@ export default function EditAppPage() {
           router.push(`/dashboard/apps/${id}`);
         },
         onError(error) {
+          const message = getApiErrorMessage(error);
+          // Package name is unique in the database, so a duplicate can only be
+          // detected on save. Attach it to the field inline (it clears when the
+          // user edits the field) instead of only flashing a toast.
+          if (message && /package name/i.test(message)) {
+            setError("packageName", { type: "server", message });
+            setOpenSections((current) => ({ ...current, basic: true }));
+          }
           showApiError(error);
         },
       },
@@ -326,10 +343,11 @@ export default function EditAppPage() {
                   error={errors.packageName?.message}
                 >
                   <input
-                    className={`${inputClass} bg-zinc-100 dark:bg-zinc-850 cursor-not-allowed`}
+                    className={inputClass}
                     placeholder="com.templateforge.shopping"
-                    disabled
-                    {...register("packageName")}
+                    {...register("packageName", {
+                      onChange: () => clearErrors("packageName"),
+                    })}
                   />
                 </Field>
                 <Field

@@ -80,10 +80,17 @@ const createAppSlice = createSlice({
     resetCreateApp() {
       return initialState;
     },
+
+    updateAppInfo(state, action: PayloadAction<Partial<AppInfo>>) {
+      state.appInfo = {
+        ...state.appInfo,
+        ...action.payload,
+      };
+    },
   },
 });
 
-export const { setAppInfo, setTemplateId, resetCreateApp } =
+export const { setAppInfo, updateAppInfo, setTemplateId, resetCreateApp } =
   createAppSlice.actions;
 
 export default createAppSlice.reducer;

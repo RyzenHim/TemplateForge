@@ -106,6 +106,7 @@ const appEditorSchema = z.object({
     kioskMode: z.boolean(),
     disableScrollBounce: z.boolean(),
   }),
+  thumbnail: z.union([z.literal(""), z.string().url()]),
 });
 
 type AppEditorValues = z.infer<typeof appEditorSchema>;
@@ -152,6 +153,7 @@ const editorDefaults: AppEditorValues = {
     kioskMode: false,
     disableScrollBounce: false,
   },
+  thumbnail: "",
 };
 
 const permissions = [
@@ -211,6 +213,9 @@ export default function CreateAppPage() {
     useTemplates();
   const { data: publicTemplates = [], isLoading: isLoadingPublic } =
     usePublicTemplates();
+
+  console.log("privateTemplates", privateTemplates);
+  console.log("publicTemplates", publicTemplates);
 
   const reduxDefaults = useMemo<AppEditorValues>(
     () => ({
@@ -326,9 +331,18 @@ export default function CreateAppPage() {
     setValue("websiteUrl", appInfo?.websiteUrl ?? currentValues.websiteUrl, {
       shouldDirty: true,
     });
-    setValue("icon", appInfo?.icon ?? currentValues.icon, {
-      shouldDirty: true,
-    });
+    // setValue("icon", appInfo?.icon ?? currentValues.icon, {
+    //   shouldDirty: true,
+    // }
+    setValue(
+      "icon",
+      template.thumbnail ?? appInfo?.icon ?? currentValues.icon,
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+
     setValue("description", currentValues.description, { shouldDirty: true });
 
     setValue(
@@ -823,11 +837,21 @@ export default function CreateAppPage() {
               >
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field
-                    label="App icon URL"
+                    label="App icon URL (Thumbnail)"
                     hint="Upload integration comes next"
                     error={errors.icon?.message}
                   >
                     <div className="mt-1.5 flex gap-2">
+                      {/* <input
+                        value={values?.thumbnail}
+                        className={inputClass.replace(
+                          "w-full ",
+                          "min-w-0 flex-1 ",
+                        )}
+                        placeholder="https://.../icon.png"
+                        {...register("icon")}
+                      /> */}
+
                       <input
                         className={inputClass.replace(
                           "w-full ",

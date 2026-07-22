@@ -12,7 +12,7 @@ import {
   ChevronUp,
   Loader2,
 } from "lucide-react";
-
+import { Controller } from "react-hook-form";
 import Button from "@/app/components/ui/Button";
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
@@ -336,12 +336,18 @@ export default function EditTemplatePage() {
                   <div className="mt-1.5 flex items-center gap-3">
                     <input
                       type="color"
-                      className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                      {...register("branding.primaryColor")}
+                      value={values.branding?.primaryColor || "#4F46E5"}
+                      onChange={(e) =>
+                        setValue("branding.primaryColor", e.target.value, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
                     />
+
                     <input
-                      className={`${inputClass} mt-0`}
                       {...register("branding.primaryColor")}
+                      className={`${inputClass} mt-0`}
                     />
                   </div>
                 </Field>
@@ -427,7 +433,19 @@ export default function EditTemplatePage() {
                       <input
                         type="color"
                         className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                        {...register("splashScreen.backgroundColor")}
+                        value={
+                          values.splashScreen?.backgroundColor || "#FFFFFF"
+                        }
+                        onChange={(e) =>
+                          setValue(
+                            "splashScreen.backgroundColor",
+                            e.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                       <input
                         className={`${inputClass} mt-0`}
@@ -498,7 +516,17 @@ export default function EditTemplatePage() {
                       <input
                         type="color"
                         className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                        {...register("appSettings.statusBarColor")}
+                        value={values.appSettings?.statusBarColor || "#000000"}
+                        onChange={(e) =>
+                          setValue(
+                            "appSettings.statusBarColor",
+                            e.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                       <input
                         className={`${inputClass} mt-0`}
@@ -516,7 +544,20 @@ export default function EditTemplatePage() {
                       <input
                         type="color"
                         className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-950"
-                        {...register("appSettings.systemNavigationBarColor")}
+                        value={
+                          values.appSettings?.systemNavigationBarColor ||
+                          "#FFFFFF"
+                        }
+                        onChange={(e) =>
+                          setValue(
+                            "appSettings.systemNavigationBarColor",
+                            e.target.value,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          )
+                        }
                       />
                       <input
                         className={`${inputClass} mt-0`}

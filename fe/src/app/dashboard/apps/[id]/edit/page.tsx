@@ -18,8 +18,6 @@ import {
   Upload,
 } from "lucide-react";
 
-import Button from "@/app/components/ui/Button";
-import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
 
 import { useApp } from "@/app/lib/hooks/app/useApp";

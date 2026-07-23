@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { useParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -126,9 +132,13 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
   }, [isEdit, template, reset]);
 
   // Create mode: prefill name/description that were entered in
-  // CreateTemplateModal and stashed in redux; everything else stays default.
+  // CreateTemplateModal and stashed in redux — ONCE, on mount. After that the
+  // form inputs are the source of truth, so user edits are never clobbered by
+  // a later redux reference change.
+  const createPrefillDone = useRef(false);
   useEffect(() => {
-    if (isEdit || !templateInfo) return;
+    if (isEdit || createPrefillDone.current || !templateInfo) return;
+    createPrefillDone.current = true;
     reset({
       ...editorDefaults,
       name: templateInfo.name || editorDefaults.name,

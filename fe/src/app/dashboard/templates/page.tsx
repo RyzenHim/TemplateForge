@@ -87,7 +87,9 @@ export default function TemplatePage() {
             {filteredTemplates.length === 0 ? (
               <Card className="flex min-h-[300px] items-center justify-center">
                 <div className="text-center">
-                  <h2 className="text-lg font-semibold">No matching templates</h2>
+                  <h2 className="text-lg font-semibold">
+                    No matching templates
+                  </h2>
 
                   <p className="mt-2 text-sm text-gray-500">
                     Try a different search term.

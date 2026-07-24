@@ -1,16 +1,5 @@
 import { NavigationItems } from "../types/sideBarMenus.types";
 
-// export const homeItems: NavigationItems[] = [
-//   {
-//     label: "My Apps",
-//     href: "/dashboard/apps",
-//   },
-//   {
-//     label: "Templates",
-//     href: "/dashboard/templates",
-//   },
-// ];
-
 export const general_sideBar_options: NavigationItems[] = [
   {
     label: "My App",
@@ -23,6 +12,10 @@ export const general_sideBar_options: NavigationItems[] = [
   {
     label: "Public Templates",
     href: "/dashboard/public_templates",
+  },
+  {
+    label: "Add-ons",
+    href: "/dashboard/addons",
   },
 ];
 export const app_sideBar_options: NavigationItems[] = [

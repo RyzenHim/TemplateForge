@@ -6,6 +6,7 @@ import { AuthModule } from '../auth/auth.module';
 import { AppsModule } from 'src/apps/apps.module';
 import { TemplatesModule } from 'src/templates/templates.module';
 import { UploadsModule } from 'src/uploads/uploads.module';
+import { AddonsModule } from 'src/addons/addons.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -20,6 +21,7 @@ import { UploadsModule } from 'src/uploads/uploads.module';
     AppsModule,
     TemplatesModule,
     UploadsModule,
+    AddonsModule,
     UserModule,
   ],
   controllers: [],

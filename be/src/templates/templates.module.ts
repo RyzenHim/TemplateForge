@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TemplatesController } from './templates.controller';
 import { TemplatesService } from './templates.service';
 import { Template, TemplateSchema } from './schemas/template.schema';
+import { UploadsModule } from 'src/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Template, TemplateSchema } from './schemas/template.schema';
         schema: TemplateSchema,
       },
     ]),
+    UploadsModule,
   ],
   controllers: [TemplatesController],
   providers: [TemplatesService],

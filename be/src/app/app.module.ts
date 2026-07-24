@@ -5,6 +5,7 @@ import { UserModule } from '../users/user.module';
 import { AuthModule } from '../auth/auth.module';
 import { AppsModule } from 'src/apps/apps.module';
 import { TemplatesModule } from 'src/templates/templates.module';
+import { UploadsModule } from 'src/uploads/uploads.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -18,6 +19,8 @@ import { TemplatesModule } from 'src/templates/templates.module';
     AuthModule,
     AppsModule,
     TemplatesModule,
+    UploadsModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],

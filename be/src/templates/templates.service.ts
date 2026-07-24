@@ -5,12 +5,14 @@ import { Model, Types } from 'mongoose';
 import { Template, TemplateDocument } from './schemas/template.schema';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
+import { CloudinaryService } from '../uploads/cloudinary/cloudinary.service';
 
 @Injectable()
 export class TemplatesService {
   constructor(
     @InjectModel(Template.name)
     private readonly templateModel: Model<TemplateDocument>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   private mapTemplate(template: TemplateDocument) {
@@ -32,9 +34,45 @@ export class TemplatesService {
     };
   }
 
-  async create(ownerId: string, createTemplateDto: CreateTemplateDto) {
+  async create(
+    ownerId: string,
+    createTemplateDto: CreateTemplateDto,
+    files?: {
+      thumbnail?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
+  ) {
+    const dto = { ...createTemplateDto };
+
+    // Upload thumbnail if provided
+    if (files?.thumbnail?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(
+        files.thumbnail[0],
+      );
+      console.log('result after uploading the image', result);
+
+      dto.thumbnail = result.secure_url;
+    }
+
+    // Upload splash image if provided (only ONE file based on splash type)
+    if (files?.splashImage?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(
+        files.splashImage[0],
+      );
+      const splashType = dto.splashScreen?.type;
+
+      if (splashType === 'image') {
+        dto.splashScreen.fullImage = result.secure_url;
+      } else if (splashType === 'animation') {
+        dto.splashScreen.animationJson = result.secure_url;
+      } else {
+        // Default: 'logo' type
+        dto.splashScreen.logoImage = result.secure_url;
+      }
+    }
+
     const template = await this.templateModel.create({
-      ...createTemplateDto,
+      ...dto,
       owner: new Types.ObjectId(ownerId),
     });
 

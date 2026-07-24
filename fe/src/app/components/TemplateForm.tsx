@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type KeyboardEvent,
@@ -45,6 +46,13 @@ interface TemplateFormProps {
   mode: "create" | "edit";
 }
 
+// Keys of every image-ish field that supports a "pick a file to preview"
+// flow. None of these are ever written into the RHF form state — the file
+// input only ever produces a local blob: URL used for rendering. The actual
+// value that gets validated and sent to the backend is whatever the user
+// types/pastes into the paired URL text field.
+type PreviewKey = "thumbnail" | "logoImage" | "fullImage" | "animationJson";
+
 export default function TemplateForm({ mode }: TemplateFormProps) {
   const isEdit = mode === "edit";
 
@@ -59,9 +67,6 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
     (state) => state.createTemplate.templateInfo,
   );
 
-  // In edit mode this fetches the existing template. In create mode there's
-  // no id, so this should be a no-op — check that useTemplate(undefined)
-  // is safe (i.e. it disables its underlying query) in your implementation.
   const { data: template, isLoading } = useTemplate(isEdit ? id : undefined);
   const { mutate: updateTemplate, isPending: isUpdating } = useUpdateTemplate();
   const createTemplateMutation = useCreateTemplate();
@@ -75,6 +80,43 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
     settings: true,
   });
 
+  // Local preview state. These are object URLs created from whatever file
+  // the user picks — good for showing a live preview, useless (and unsafe)
+  // to submit to the backend, so they never touch react-hook-form state.
+  const [previews, setPreviews] = useState<Partial<Record<PreviewKey, string>>>(
+    {},
+  );
+  const [selectedFiles, setSelectedFiles] = useState<
+    Partial<Record<PreviewKey, File>>
+  >({});
+
+  function setPreviewFor(key: PreviewKey, file: File) {
+    setSelectedFiles((current) => ({
+      ...current,
+      [key]: file,
+    }));
+
+    setPreviews((current) => {
+      const next = { ...current };
+      if (next[key]) URL.revokeObjectURL(next[key]!);
+      next[key] = URL.createObjectURL(file);
+      // const blobUrl = URL.createObjectURL(file);
+      // console.log(blobUrl);
+
+      return next;
+    });
+  }
+  //cleaner for the remaining url in the browser
+  // This ensures all Blob URLs are released when the component unmounts.
+  useEffect(() => {
+    return () => {
+      Object.values(previews).forEach((url) => {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [previews]);
   const {
     register,
     control,
@@ -88,7 +130,6 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
     mode: "onBlur",
   });
 
-  // Edit mode: prefill the form once the template loads.
   useEffect(() => {
     if (!isEdit || !template) return;
     reset({
@@ -134,7 +175,7 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
   // Create mode: prefill name/description that were entered in
   // CreateTemplateModal and stashed in redux — ONCE, on mount. After that the
   // form inputs are the source of truth, so user edits are never clobbered by
-  // a later redux reference change.
+  // later redux reference change.
   const createPrefillDone = useRef(false);
   useEffect(() => {
     if (isEdit || createPrefillDone.current || !templateInfo) return;
@@ -151,10 +192,17 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
   const selectedPermissions = Object.values(values.appPermissions ?? {}).filter(
     Boolean,
   ).length;
-  const splashAsset =
+
+  // What the phone mockup should actually render for the splash screen:
+  // prefer a locally-picked file preview, fall back to whatever URL is
+  // currently saved on the field. "logo" and "animation" are treated
+  // identically — both are just a small centred image.
+  const splashPreviewSrc =
     values.splashScreen?.type === "image"
-      ? values.splashScreen?.fullImage
-      : values.splashScreen?.logoImage;
+      ? previews.fullImage || values.splashScreen?.fullImage
+      : values.splashScreen?.type === "animation"
+        ? previews.animationJson || values.splashScreen?.animationJson
+        : previews.logoImage || values.splashScreen?.logoImage;
 
   function toggleSection(section: string) {
     setOpenSections((current) => ({
@@ -206,31 +254,52 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
       return;
     }
 
-    createTemplateMutation.mutate(
-      {
-        name: data.name,
-        description: data.description || undefined,
-        visibility: data.visibility,
-        thumbnail: data.thumbnail || undefined,
-        category: data.category || undefined,
-        tags: data.tags.length > 0 ? data.tags : undefined,
-        branding: data.branding,
-        splashScreen: data.splashScreen,
-        appPermissions: data.appPermissions,
-        appSettings: data.appSettings,
+    // Build FormData for multipart upload
+    const formData = new FormData();
+
+    // Basic fields
+    formData.append("name", data.name);
+    formData.append("visibility", data.visibility);
+    if (data.description) formData.append("description", data.description);
+    if (data.category) formData.append("category", data.category);
+
+    // Tags (send as JSON string array)
+    if (data.tags.length > 0) {
+      formData.append("tags", JSON.stringify(data.tags));
+    }
+
+    // Nested objects — stringify for multipart
+    formData.append("branding", JSON.stringify(data.branding));
+    formData.append("splashScreen", JSON.stringify(data.splashScreen));
+    formData.append("appPermissions", JSON.stringify(data.appPermissions));
+    formData.append("appSettings", JSON.stringify(data.appSettings));
+
+    // Thumbnail file — if user selected a file, send it
+    if (selectedFiles.thumbnail) {
+      formData.append("thumbnail", selectedFiles.thumbnail);
+    }
+
+    // Splash image — send ONE file based on splashScreen.type
+    const splashType = data.splashScreen.type;
+    if (splashType === "image" && selectedFiles.fullImage) {
+      formData.append("splashImage", selectedFiles.fullImage);
+    } else if (splashType === "animation" && selectedFiles.animationJson) {
+      formData.append("splashImage", selectedFiles.animationJson);
+    } else if (selectedFiles.logoImage) {
+      formData.append("splashImage", selectedFiles.logoImage);
+    }
+
+    createTemplateMutation.mutate(formData, {
+      onSuccess() {
+        dispatch(resetCreateTemplate());
+        toast.success("Template created successfully.");
+        router.push("/dashboard/templates");
       },
-      {
-        onSuccess() {
-          dispatch(resetCreateTemplate());
-          toast.success("Template created successfully.");
-          router.push("/dashboard/templates");
-        },
-        onError(error) {
-          console.error(error);
-          toast.error("Failed to create template.");
-        },
+      onError(error) {
+        console.error(error);
+        toast.error("Failed to create template.");
       },
-    );
+    });
   }
 
   const isSubmitting = isEdit ? isUpdating : createTemplateMutation.isPending;
@@ -354,6 +423,11 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
                     className={inputClass}
                     placeholder="https://.../thumbnail.png"
                     {...register("thumbnail")}
+                  />
+                  <ImageDropzone
+                    preview={previews.thumbnail}
+                    onFileChange={(file) => setPreviewFor("thumbnail", file)}
+                    hint="Upload an image — it will be sent to the server when you create the template."
                   />
                 </Field>
                 <div>
@@ -525,7 +599,7 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
                       </span>
                       <span className="mt-1 block text-xs text-zinc-500 dark:text-zinc-400">
                         {type === "animation"
-                          ? "Use a Lottie JSON URL"
+                          ? "Small looping image while loading"
                           : type === "image"
                             ? "Fill the screen with an image"
                             : "Show a centred logo"}
@@ -535,16 +609,31 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
                   {values.splashScreen?.type === "animation" ? (
-                    <Field label="Animation JSON URL">
+                    // Same treatment as "logo" — a small centred image. The
+                    // only difference is we nudge people toward PNGs.
+                    <Field
+                      label="Animation image"
+                      hint="A small looping GIF shown while the app loads"
+                      error={errors.splashScreen?.animationJson?.message}
+                    >
                       <input
                         className={inputClass}
-                        placeholder="https://.../animation.json"
+                        placeholder="https://.../animation.gif"
                         {...register("splashScreen.animationJson")}
+                      />
+                      <ImageDropzone
+                        preview={previews.animationJson}
+                        onFileChange={(file) =>
+                          setPreviewFor("animationJson", file)
+                        }
+                        accept="image/gif"
+                        hint="Upload an image — it will be sent when you create the template."
                       />
                     </Field>
                   ) : values.splashScreen?.type === "image" ? (
                     <Field
-                      label="Full image URL"
+                      label="Full image"
+                      hint="Fills the entire splash screen"
                       error={errors.splashScreen?.fullImage?.message}
                     >
                       <input
@@ -552,16 +641,31 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
                         placeholder="https://.../splash.png"
                         {...register("splashScreen.fullImage")}
                       />
+                      <ImageDropzone
+                        preview={previews.fullImage}
+                        onFileChange={(file) =>
+                          setPreviewFor("fullImage", file)
+                        }
+                        hint="Upload an image — it will be sent when you create the template."
+                      />
                     </Field>
                   ) : (
                     <Field
-                      label="Logo image URL"
+                      label="Logo image"
+                      hint="A small centred logo"
                       error={errors.splashScreen?.logoImage?.message}
                     >
                       <input
                         className={inputClass}
                         placeholder="https://.../logo.png"
                         {...register("splashScreen.logoImage")}
+                      />
+                      <ImageDropzone
+                        preview={previews.logoImage}
+                        onFileChange={(file) =>
+                          setPreviewFor("logoImage", file)
+                        }
+                        hint="Upload an image — it will be sent when you create the template."
                       />
                     </Field>
                   )}
@@ -792,27 +896,45 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
                     }}
                   />
                   <div
-                    className="flex aspect-[9/15] flex-col items-center justify-center px-5 text-center"
+                    className="relative flex aspect-[9/15] items-center justify-center overflow-hidden px-4 text-center"
                     style={{
                       backgroundColor:
                         values.splashScreen?.backgroundColor || "#FFFFFF",
                     }}
                   >
-                    {splashAsset ? (
-                      <img
-                        src={splashAsset}
-                        alt="Splash preview"
-                        className="max-h-24 max-w-24 rounded-xl object-contain"
-                      />
-                    ) : (
-                      <ImageIcon
-                        className="h-10 w-10"
-                        style={{ color: values.branding?.primaryColor }}
-                      />
-                    )}
-                    <span className="mt-3 text-sm font-bold text-zinc-900">
-                      {values.name || "Your template"}
-                    </span>
+                    {values.splashScreen?.type === "image" &&
+                      splashPreviewSrc && (
+                        <img
+                          src={splashPreviewSrc}
+                          alt="Splash preview"
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      )}
+                    <div className="relative z-10 flex flex-col items-center gap-3">
+                      {values.splashScreen?.type === "image" ? (
+                        !splashPreviewSrc && (
+                          <ImageIcon
+                            className="h-10 w-10"
+                            style={{ color: values.branding?.primaryColor }}
+                          />
+                        )
+                      ) : splashPreviewSrc ? (
+                        <img
+                          src={splashPreviewSrc}
+                          alt="Logo preview"
+                          className="max-h-24 max-w-24 rounded-xl object-contain"
+                        />
+                      ) : (
+                        <ImageIcon
+                          className="h-10 w-10"
+                          style={{ color: values.branding?.primaryColor }}
+                        />
+                      )}
+
+                      <span className="text-sm font-bold text-zinc-900">
+                        {values.name || "Your template"}
+                      </span>
+                    </div>
                   </div>
                   <div
                     className="h-5"
@@ -973,6 +1095,66 @@ function Field({
         </span>
       )}
     </label>
+  );
+}
+
+// A small, self-contained "pick a file to preview" control. It never writes
+// to react-hook-form — it only ever produces a local blob: URL for the
+// caller to render. The caller is responsible for the real (backend-bound)
+// URL field that sits above/beside it.
+function ImageDropzone({
+  preview,
+  onFileChange,
+  accept = "image/*",
+  hint,
+}: {
+  preview?: string | null;
+  onFileChange: (file: File) => void;
+  accept?: string;
+  hint?: string;
+}) {
+  const inputId = useId();
+  return (
+    <div className="mt-2 flex items-center gap-3">
+      <label
+        htmlFor={inputId}
+        className="group relative flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-zinc-300 bg-zinc-50 transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-indigo-500 dark:hover:bg-indigo-500/10"
+      >
+        {preview ? (
+          <img
+            src={preview}
+            alt="Selected file preview"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <ImageIcon
+            size={20}
+            className="text-zinc-400 transition group-hover:text-indigo-500"
+          />
+        )}
+        <input
+          id={inputId}
+          type="file"
+          accept={accept}
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            onFileChange(file);
+            // Reset so picking the same file again still fires onChange.
+            event.target.value = "";
+          }}
+        />
+      </label>
+      <div className="min-w-0 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+        <span className="block font-medium text-zinc-700 dark:text-zinc-300">
+          {preview ? "Preview updated" : "Upload to preview"}
+        </span>
+        <span className="block">
+          {hint ?? "Not sent to the server — paste a URL to actually save it."}
+        </span>
+      </div>
+    </div>
   );
 }
 

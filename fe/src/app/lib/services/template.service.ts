@@ -7,9 +7,14 @@ import type {
 } from "../types/template.types";
 
 export async function createTemplate(
-  data: CreateTemplateRequest,
+  data: CreateTemplateRequest | FormData,
 ): Promise<TemplateResponse> {
-  const response = await api.post<TemplateResponse>("/templates", data);
+  const response = await api.post<TemplateResponse>("/templates", data, {
+    headers:
+      data instanceof FormData
+        ? { "Content-Type": "multipart/form-data" }
+        : undefined,
+  });
   return response.data;
 }
 

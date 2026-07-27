@@ -3,10 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from '../users/user.module';
 import { AuthModule } from '../auth/auth.module';
-import { AppsModule } from 'src/apps/apps.module';
-import { TemplatesModule } from 'src/templates/templates.module';
-import { UploadsModule } from 'src/uploads/uploads.module';
-import { AddonsModule } from 'src/addons/addons.module';
+import { AppsModule } from '../apps/apps.module';
+import { TemplatesModule } from '../templates/templates.module';
+import { UploadsModule } from '../uploads/uploads.module';
+import { AddonsModule } from '../addons/addons.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),

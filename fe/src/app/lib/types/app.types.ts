@@ -59,6 +59,8 @@ export interface App {
   version: string;
   websiteUrl: string;
   icon: string;
+  thumbnail?: string;
+  platform: "Android" | "iOS" | "Android & iOS";
   status: "draft" | "published" | "archived";
   owner: string;
   sourceTemplate: string | null;
@@ -79,6 +81,8 @@ export interface CreateAppRequest {
   version?: string;
   websiteUrl?: string;
   icon?: string;
+  thumbnail?: string;
+  platform: string;
   templateId?: string;
   branding: Branding;
   splashScreen: SplashScreen;

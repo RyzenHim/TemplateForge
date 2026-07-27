@@ -42,7 +42,7 @@ export class TemplatesService {
       splashImage?: Express.Multer.File[];
     },
   ) {
-    const dto = { ...createTemplateDto };
+    const dto: any = { ...createTemplateDto };
 
     // Upload thumbnail if provided
     if (files?.thumbnail?.[0]) {
@@ -117,7 +117,7 @@ export class TemplatesService {
       splashImage?: Express.Multer.File[];
     },
   ) {
-    const dto = { ...updateTemplateDto };
+    const dto: any = { ...updateTemplateDto };
 
     // Upload thumbnail if provided
     if (files?.thumbnail?.[0]) {

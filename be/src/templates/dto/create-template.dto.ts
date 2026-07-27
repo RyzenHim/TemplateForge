@@ -14,7 +14,7 @@ import {
   SplashScreenDto,
   AppPermissionsDto,
   AppSettingsDto,
-} from 'src/common/dto/app-configuration.dto';
+} from '../../common/dto/app-configuration.dto';
 
 export class CreateTemplateDto {
   @IsString()

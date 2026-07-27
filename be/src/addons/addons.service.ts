@@ -30,7 +30,11 @@ export class AddonsService {
     };
   }
 
-  async create(createAddonDto: CreateAddonDto, userId: string, file?: Express.Multer.File) {
+  async create(
+    createAddonDto: CreateAddonDto,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
     const dto = { ...createAddonDto };
     if (file) {
       const result = await this.cloudinaryService.uploadImage(file);
@@ -66,7 +70,12 @@ export class AddonsService {
     return this.mapAddon(addon);
   }
 
-  async update(id: string, updateAddonDto: UpdateAddonDto, userId: string, file?: Express.Multer.File) {
+  async update(
+    id: string,
+    updateAddonDto: UpdateAddonDto,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
     const dto = { ...updateAddonDto };
     if (file) {
       const result = await this.cloudinaryService.uploadImage(file);

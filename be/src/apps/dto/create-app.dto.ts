@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDefined,
+  IsEnum,
   IsMongoId,
   IsOptional,
   IsString,
@@ -15,7 +16,7 @@ import {
   AppSettingsDto,
   BrandingDto,
   SplashScreenDto,
-} from 'src/common/dto/app-configuration.dto';
+} from '../../common/dto/app-configuration.dto';
 
 export class CreateAppDto {
   @IsString()
@@ -41,6 +42,13 @@ export class CreateAppDto {
   @IsOptional()
   @IsString()
   icon?: string;
+
+  @IsOptional()
+  @IsString()
+  thumbnail?: string;
+
+  @IsEnum(['Android', 'iOS', 'Android & iOS'])
+  platform!: string;
 
   // Selected template (System/Public/Private)
   @IsOptional()

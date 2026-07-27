@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UploadsModule } from 'src/uploads/uploads.module';
+import { UploadsModule } from '../uploads/uploads.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AddonsController } from './addons.controller';

@@ -1,15 +1,22 @@
-# TODO: Add View Button & Detail Page for Addons
+# TODO: Platform Change Warning & Add-on Filtering ✅
 
-## Completed Steps
+## Task
 
-- [x] 1. Create `fe/src/app/dashboard/addons/[id]/page.tsx` — Addon detail page with back navigation, header (icon, name, platform, category), info card, description, and edit button.
-- [x] 2. Update `fe/src/app/dashboard/addons/page.tsx` — Add "View" button (Eye icon) to `AddonCard` linking to detail page.
-- [x] 3. Update `fe/src/app/lib/types/addons/addons.types.ts` — Added `createdAt` and `updatedAt` fields to `Addon` type.
+When the platform dropdown is changed while editing an app:
 
-## Additional Fixes
+1. Show a confirmation/warning dialog about incompatible add-ons ✅
+2. On confirm: filter/clear incompatible add-ons + update platform ✅
+3. On cancel: revert platform to previous selection ✅
 
-- [x] 4. **Backend `addons.service.ts`** — Made `findAll()` public (no owner filter) and `findOne()` public (no owner filter). `update()` and `remove()` still require owner.
-- [x] 5. **Backend `addons.controller.ts`** — Removed `req.user.id` from `findOne()` call since it no longer needs user context.
-- [x] 6. **Frontend `addons.types.ts`** — Added `owner?: string` field to `Addon` type.
-- [x] 7. **Frontend `addons/page.tsx`** — `AddonCard` now checks ownership and conditionally shows Edit/Delete buttons only for owners.
-- [x] 8. **Frontend `addons/[id]/page.tsx`** — Detail page now shows Edit button only if current user is the owner.
+## Changes Made
+
+### 1. `fe/src/app/components/AppForm.tsx`
+
+- ✅ Added `useRef` to React imports
+- ✅ Added `ConfirmDialog` import
+- ✅ Added state: `previousPlatformRef`, `showPlatformWarning`, `pendingPlatformValue`
+- ✅ Added `confirmPlatformChange` handler - updates platform & filters incompatible add-ons
+- ✅ Added `cancelPlatformChange` handler - reverts platform to previous value
+- ✅ Modified platform `<select>` to intercept onChange with warning logic
+- ✅ Added `<ConfirmDialog>` component for platform change warning
+- ✅ Added `previousPlatformRef.current` initialization in hydrate effect

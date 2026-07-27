@@ -6,7 +6,7 @@ import {
   AppPermissions,
   AppSettings,
   AddonSnapshot,
-} from 'src/common/schemas/app-configuration.schema';
+} from '../../common/schemas/app-configuration.schema';
 export type AppDocument = HydratedDocument<App>;
 
 @Schema({
@@ -49,6 +49,17 @@ export class App {
     default: '',
   })
   icon!: string;
+
+  @Prop({
+    default: '',
+  })
+  thumbnail!: string;
+
+  @Prop({
+    required: true,
+    enum: ['Android', 'iOS', 'Android & iOS'],
+  })
+  platform!: string;
 
   @Prop({
     type: Types.ObjectId,

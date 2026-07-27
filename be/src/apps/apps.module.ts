@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UploadsModule } from 'src/uploads/uploads.module';
+import { UploadsModule } from '../uploads/uploads.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppsController } from './apps.controller';
@@ -9,7 +9,7 @@ import { App, AppSchema } from './schemas/app.schema';
 import {
   Template,
   TemplateSchema,
-} from 'src/templates/schemas/template.schema';
+} from '../templates/schemas/template.schema';
 
 @Module({
   imports: [

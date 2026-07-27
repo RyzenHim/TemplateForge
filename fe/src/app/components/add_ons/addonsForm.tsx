@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, Loader2, Upload, ImageIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Loader2,
+  Upload,
+  ImageIcon,
+} from "lucide-react";
 
 import {
   AddonsFormProps,
@@ -24,9 +30,9 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
 
   // Only fetch when editing
   const { data: addonData, isLoading: isAddonLoading } = useAddon(
-    mode === "edit" ? addonId : undefined
+    mode === "edit" ? addonId : undefined,
   );
-  
+
   const [selectedIcon, setSelectedIcon] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
 
@@ -62,6 +68,7 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
       description: addonData.description ?? "",
       category: addonData.category ?? "",
       icon: addonData.icon ?? "",
+      // thumbnail: app.thumbnail || "",
     });
   }, [mode, addonData, reset]);
 
@@ -77,7 +84,7 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
       if (data.description) formData.append("description", data.description);
       formData.append("category", data.category);
       if (data.icon) formData.append("icon", data.icon);
-      
+
       if (selectedIcon) {
         formData.append("icon", selectedIcon);
       }
@@ -288,7 +295,9 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
                       }}
                     />
                     <span className="text-xs text-zinc-500">
-                      {iconPreview ? "New icon preview" : "Current icon preview"}
+                      {iconPreview
+                        ? "New icon preview"
+                        : "Current icon preview"}
                     </span>
                   </div>
                 )}

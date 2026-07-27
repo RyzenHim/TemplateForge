@@ -39,7 +39,18 @@ export default function AppCard({ app }: AppCardProps) {
     <Card className="group flex h-full flex-col transition-all duration-200 hover:-translate-y-1 hover:border-indigo-500/50 hover:shadow-xl">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="text-3xl">📱</div>
+          {app.thumbnail ? (
+            <img
+              src={app.thumbnail}
+              alt={`${app.name} thumbnail`}
+              className="h-16 w-full max-w-[10rem] rounded-lg object-cover border border-zinc-200 dark:border-zinc-700"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="text-3xl">📱</div>
+          )}
 
           <h3 className="mt-3 truncate text-lg font-semibold text-zinc-900 dark:text-white">
             {app.name}
@@ -55,9 +66,20 @@ export default function AppCard({ app }: AppCardProps) {
         <span className="shrink-0 rounded-full border border-zinc-200 bg-gray-900 px-3 py-1 text-xs font-medium capitalize text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
           {app.status || "active"}
         </span>
+
+        <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+          {app.platform}
+        </span>
       </div>
 
       <div className="mt-5 space-y-2 text-sm">
+        <div className="flex justify-between gap-2">
+          <span className="text-zinc-500 dark:text-zinc-400">Platform</span>
+          <span className="truncate font-medium text-zinc-950 dark:text-zinc-50 text-right max-w-[70%]">
+            {app.platform}
+          </span>
+        </div>
+
         <div className="flex justify-between gap-2">
           <span className="text-zinc-500 dark:text-zinc-400">Package</span>
           <span className="truncate font-medium text-zinc-950 dark:text-zinc-50 text-right max-w-[70%]">

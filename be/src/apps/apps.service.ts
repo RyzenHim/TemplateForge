@@ -29,6 +29,8 @@ export class AppsService {
       version: app.version,
       websiteUrl: app.websiteUrl,
       icon: app.icon,
+      thumbnail: app.thumbnail,
+      platform: app.platform,
       status: app.status,
       owner: app.owner?.toString() || '',
       sourceTemplate: app.sourceTemplate?._id
@@ -45,16 +47,33 @@ export class AppsService {
     };
   }
 
-  async create(createAppDto: CreateAppDto, userId: string, files?: { icon?: Express.Multer.File[]; splashImage?: Express.Multer.File[] }) {
+  async create(
+    createAppDto: CreateAppDto,
+    userId: string,
+    files?: {
+      icon?: Express.Multer.File[];
+      thumbnail?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
+  ) {
     const { templateId, ...appData } = createAppDto;
-    
+
     if (files?.icon?.[0]) {
       const result = await this.cloudinaryService.uploadImage(files.icon[0]);
       appData.icon = result.secure_url;
     }
 
+    if (files?.thumbnail?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(
+        files.thumbnail[0],
+      );
+      appData.thumbnail = result.secure_url;
+    }
+
     if (files?.splashImage?.[0]) {
-      const result = await this.cloudinaryService.uploadImage(files.splashImage[0]);
+      const result = await this.cloudinaryService.uploadImage(
+        files.splashImage[0],
+      );
       const splashType = appData.splashScreen?.type || 'logo';
       if (splashType === 'image') {
         if (!appData.splashScreen) appData.splashScreen = {} as any;
@@ -110,16 +129,34 @@ export class AppsService {
     return this.mapApp(app);
   }
 
-  async update(id: string, userId: string, updateAppDto: UpdateAppDto, files?: { icon?: Express.Multer.File[]; splashImage?: Express.Multer.File[] }) {
-    const dto = { ...updateAppDto };
-    
+  async update(
+    id: string,
+    userId: string,
+    updateAppDto: UpdateAppDto,
+    files?: {
+      icon?: Express.Multer.File[];
+      thumbnail?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
+  ) {
+    const dto: any = { ...updateAppDto };
+
     if (files?.icon?.[0]) {
       const result = await this.cloudinaryService.uploadImage(files.icon[0]);
       dto.icon = result.secure_url;
     }
 
+    if (files?.thumbnail?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(
+        files.thumbnail[0],
+      );
+      dto.thumbnail = result.secure_url;
+    }
+
     if (files?.splashImage?.[0]) {
-      const result = await this.cloudinaryService.uploadImage(files.splashImage[0]);
+      const result = await this.cloudinaryService.uploadImage(
+        files.splashImage[0],
+      );
       const splashType = dto.splashScreen?.type || 'logo';
       if (splashType === 'image') {
         if (!dto.splashScreen) dto.splashScreen = {} as any;

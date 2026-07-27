@@ -14,11 +14,11 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { TemplatesService } from './templates.service';
 import { UpdateTemplateDto } from './dto/update-template.dto';
-import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import type { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 import { memoryStorage } from 'multer';
 
 @Controller('templates')
@@ -131,7 +131,12 @@ export class TemplatesController {
 
     const updateTemplateDto = parsedBody as unknown as UpdateTemplateDto;
 
-    return this.templateService.update(id, req.user.id, updateTemplateDto, files);
+    return this.templateService.update(
+      id,
+      req.user.id,
+      updateTemplateDto,
+      files,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,10 +1,10 @@
 "use client";
 import type { Platform } from "@/app/lib/types/addons/addons.types";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Loader2, Upload, ImageIcon } from "lucide-react";
 
 import {
   AddonsFormProps,
@@ -14,17 +14,28 @@ import { useCreateAddon } from "@/app/lib/hooks/addons/useCreateAddon";
 import { useUpdateAddon } from "@/app/lib/hooks/addons/useUpdateAddon";
 import { useAddon } from "@/app/lib/hooks/addons/useAddon";
 import { showApiError, showApiSuccess } from "@/app/lib/utils";
+import Loader from "../ui/Loader";
 import Button from "../ui/Button";
 
 export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
   const router = useRouter();
   const createAddonMutation = useCreateAddon();
   const updateAddonMutation = useUpdateAddon();
-  const { data: addonData } = useAddon(addonId);
 
+  // Only fetch when editing
+  const { data: addonData, isLoading: isAddonLoading } = useAddon(
+    mode === "edit" ? addonId : undefined
+  );
+  
+  const [selectedIcon, setSelectedIcon] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+
+  // Clean up object URLs
   useEffect(() => {
-    console.log("addonData", addonData);
-  }, []);
+    return () => {
+      if (iconPreview) URL.revokeObjectURL(iconPreview);
+    };
+  }, [iconPreview]);
 
   const {
     register,
@@ -34,25 +45,25 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
   } = useForm<CreateAddonsRequest>({
     defaultValues: {
       name: "",
-      platform: "",
+      platform: "" as Platform | "",
       description: "",
       category: "",
       icon: "",
     },
   });
 
-  // Fetch addon data when editing
+  // Prefill the form once addonData arrives (or is already cached)
   useEffect(() => {
-    if (mode !== "edit" || !addonId || !addonData) return;
+    if (mode !== "edit" || !addonData) return;
 
     reset({
-      name: addonData.name || "",
-      platform: (addonData.platform as Platform | "") || "",
-      description: addonData.description || "",
-      category: addonData.category || "",
-      icon: addonData.icon || "",
+      name: addonData.name ?? "",
+      platform: (addonData.platform as Platform | "") ?? "",
+      description: addonData.description ?? "",
+      category: addonData.category ?? "",
+      icon: addonData.icon ?? "",
     });
-  }, [mode, addonId, addonData, reset]);
+  }, [mode, addonData, reset]);
 
   const mutationError = createAddonMutation.error || updateAddonMutation.error;
   const isPending =
@@ -60,15 +71,25 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
 
   const onSubmit = async (data: CreateAddonsRequest) => {
     try {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("platform", data.platform);
+      if (data.description) formData.append("description", data.description);
+      formData.append("category", data.category);
+      if (data.icon) formData.append("icon", data.icon);
+      
+      if (selectedIcon) {
+        formData.append("icon", selectedIcon);
+      }
+
       if (mode === "create") {
-        await createAddonMutation.mutateAsync(data);
+        await createAddonMutation.mutateAsync(formData);
         // useCreateAddon handles redirect to /dashboard/addons
       } else {
         const response = await updateAddonMutation.mutateAsync({
           id: addonId!,
-          data,
+          data: formData,
         });
-        // Cache invalidation in useUpdateAddon completes before this runs
         showApiSuccess(response.message);
         router.push(`/dashboard/addons/${addonId}`);
       }
@@ -84,6 +105,11 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
 
   const eyebrow = mode === "edit" ? "Edit add-on" : "Add-on editor";
   const submitLabel = mode === "edit" ? "Save changes" : "Create Add-on";
+
+  // Show a loader while fetching existing addon data in edit mode
+  if (mode === "edit" && isAddonLoading) {
+    return <Loader text="Loading addon..." />;
+  }
 
   return (
     <div className="min-h-screen w-full bg-zinc-50 pb-28 dark:bg-zinc-950">
@@ -179,6 +205,12 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
                   <option value="iOS">iOS</option>
                   <option value="Android & iOS">Android & iOS</option>
                 </select>
+
+                {errors.platform && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.platform.message}
+                  </p>
+                )}
               </div>
 
               {/* Description */}
@@ -219,19 +251,36 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
               {/* Icon */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                  Icon URL
+                  App Icon
                 </label>
 
-                <input
-                  {...register("icon")}
-                  className="mt-1.5 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
-                  placeholder="https://..."
-                />
+                <div className="mt-1.5 flex gap-2">
+                  <input
+                    {...register("icon")}
+                    className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+                    placeholder="https://..."
+                  />
+                  <label className="mt-1.5 inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800">
+                    <Upload size={16} /> Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setSelectedIcon(file);
+                          setIconPreview(URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
 
-                {addonData?.icon && (
+                {(iconPreview || addonData?.icon) && (
                   <div className="mt-2 flex items-center gap-2">
                     <img
-                      src={addonData.icon}
+                      src={iconPreview || addonData?.icon}
                       alt="Current icon preview"
                       className="h-10 w-10 rounded-lg object-cover border border-zinc-200 dark:border-zinc-700"
                       onError={(e) => {
@@ -239,7 +288,7 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
                       }}
                     />
                     <span className="text-xs text-zinc-500">
-                      Current icon preview
+                      {iconPreview ? "New icon preview" : "Current icon preview"}
                     </span>
                   </div>
                 )}

@@ -89,12 +89,49 @@ export class TemplatesController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'thumbnail', maxCount: 1 },
+        { name: 'splashImage', maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
+  )
   update(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
-    @Body() updateTemplateDto: UpdateTemplateDto,
+    @UploadedFiles()
+    files: {
+      thumbnail?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
+    @Body() body: Record<string, any>,
   ) {
-    return this.templateService.update(id, req.user.id, updateTemplateDto);
+    // Parse nested JSON string fields from multipart form
+    const parsedBody: Record<string, any> = {};
+    for (const [key, value] of Object.entries(body)) {
+      if (
+        key === 'branding' ||
+        key === 'splashScreen' ||
+        key === 'appPermissions' ||
+        key === 'appSettings' ||
+        key === 'tags'
+      ) {
+        try {
+          parsedBody[key] =
+            typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          parsedBody[key] = value;
+        }
+      } else {
+        parsedBody[key] = value;
+      }
+    }
+
+    const updateTemplateDto = parsedBody as unknown as UpdateTemplateDto;
+
+    return this.templateService.update(id, req.user.id, updateTemplateDto, files);
   }
 
   @UseGuards(JwtAuthGuard)

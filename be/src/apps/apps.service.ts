@@ -10,11 +10,14 @@ import { App, AppDocument } from './schemas/app.schema';
 import { CreateAppDto } from './dto/create-app.dto';
 import { UpdateAppDto } from './dto/update-app.dto';
 
+import { CloudinaryService } from '../uploads/cloudinary/cloudinary.service';
+
 @Injectable()
 export class AppsService {
   constructor(
     @InjectModel(App.name)
     private readonly appModel: Model<AppDocument>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   private mapApp(app: any) {
@@ -42,14 +45,35 @@ export class AppsService {
     };
   }
 
-  async create(createAppDto: CreateAppDto, userId: string) {
+  async create(createAppDto: CreateAppDto, userId: string, files?: { icon?: Express.Multer.File[]; splashImage?: Express.Multer.File[] }) {
     const { templateId, ...appData } = createAppDto;
+    
+    if (files?.icon?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(files.icon[0]);
+      appData.icon = result.secure_url;
+    }
+
+    if (files?.splashImage?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(files.splashImage[0]);
+      const splashType = appData.splashScreen?.type || 'logo';
+      if (splashType === 'image') {
+        if (!appData.splashScreen) appData.splashScreen = {} as any;
+        appData.splashScreen!.fullImage = result.secure_url;
+      } else if (splashType === 'animation') {
+        if (!appData.splashScreen) appData.splashScreen = {} as any;
+        appData.splashScreen!.animationJson = result.secure_url;
+      } else {
+        if (!appData.splashScreen) appData.splashScreen = {} as any;
+        appData.splashScreen!.logoImage = result.secure_url;
+      }
+    }
+
     let app: AppDocument;
     try {
       app = await this.appModel.create({
         ...appData,
         owner: new Types.ObjectId(userId),
-        sourceTemplate: templateId ?? null,
+        sourceTemplate: templateId ? new Types.ObjectId(templateId) : null,
       });
     } catch (error: any) {
       if (error?.code === 11000) {
@@ -86,7 +110,29 @@ export class AppsService {
     return this.mapApp(app);
   }
 
-  async update(id: string, updateAppDto: UpdateAppDto, userId: string) {
+  async update(id: string, userId: string, updateAppDto: UpdateAppDto, files?: { icon?: Express.Multer.File[]; splashImage?: Express.Multer.File[] }) {
+    const dto = { ...updateAppDto };
+    
+    if (files?.icon?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(files.icon[0]);
+      dto.icon = result.secure_url;
+    }
+
+    if (files?.splashImage?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(files.splashImage[0]);
+      const splashType = dto.splashScreen?.type || 'logo';
+      if (splashType === 'image') {
+        if (!dto.splashScreen) dto.splashScreen = {} as any;
+        dto.splashScreen!.fullImage = result.secure_url;
+      } else if (splashType === 'animation') {
+        if (!dto.splashScreen) dto.splashScreen = {} as any;
+        dto.splashScreen!.animationJson = result.secure_url;
+      } else {
+        if (!dto.splashScreen) dto.splashScreen = {} as any;
+        dto.splashScreen!.logoImage = result.secure_url;
+      }
+    }
+
     let app: AppDocument | null;
     try {
       app = await this.appModel
@@ -95,7 +141,7 @@ export class AppsService {
             _id: id,
             owner: new Types.ObjectId(userId),
           },
-          updateAppDto,
+          dto,
           {
             new: true,
             runValidators: true,

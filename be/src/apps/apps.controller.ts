@@ -7,9 +7,12 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -24,8 +27,43 @@ export class AppsController {
   constructor(private readonly appsService: AppsService) {}
 
   @Post()
-  create(@Body() createAppDto: CreateAppDto, @Req() req: AuthenticatedRequest) {
-    return this.appsService.create(createAppDto, req.user.id);
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'icon', maxCount: 1 },
+        { name: 'splashImage', maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
+  )
+  create(
+    @Body() body: Record<string, any>,
+    @Req() req: AuthenticatedRequest,
+    @UploadedFiles() files?: {
+      icon?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
+  ) {
+    const parsedBody: Record<string, any> = {};
+    for (const [key, value] of Object.entries(body)) {
+      if (
+        key === 'branding' ||
+        key === 'splashScreen' ||
+        key === 'appPermissions' ||
+        key === 'appSettings' ||
+        key === 'addons'
+      ) {
+        try {
+          parsedBody[key] = typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          parsedBody[key] = value;
+        }
+      } else {
+        parsedBody[key] = value;
+      }
+    }
+    const createAppDto = parsedBody as unknown as CreateAppDto;
+    return this.appsService.create(createAppDto, req.user.id, files);
   }
 
   @Get()
@@ -39,12 +77,44 @@ export class AppsController {
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'icon', maxCount: 1 },
+        { name: 'splashImage', maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
+  )
   update(
     @Param('id') id: string,
-    @Body() updateAppDto: UpdateAppDto,
+    @Body() body: Record<string, any>,
     @Req() req: AuthenticatedRequest,
+    @UploadedFiles() files?: {
+      icon?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
   ) {
-    return this.appsService.update(id, updateAppDto, req.user.id);
+    const parsedBody: Record<string, any> = {};
+    for (const [key, value] of Object.entries(body)) {
+      if (
+        key === 'branding' ||
+        key === 'splashScreen' ||
+        key === 'appPermissions' ||
+        key === 'appSettings' ||
+        key === 'addons'
+      ) {
+        try {
+          parsedBody[key] = typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          parsedBody[key] = value;
+        }
+      } else {
+        parsedBody[key] = value;
+      }
+    }
+    const updateAppDto = parsedBody as unknown as UpdateAppDto;
+    return this.appsService.update(id, req.user.id, updateAppDto, files);
   }
 
   @Delete(':id')

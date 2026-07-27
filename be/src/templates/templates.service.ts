@@ -112,13 +112,47 @@ export class TemplatesService {
     templateId: string,
     ownerId: string,
     updateTemplateDto: UpdateTemplateDto,
+    files?: {
+      thumbnail?: Express.Multer.File[];
+      splashImage?: Express.Multer.File[];
+    },
   ) {
+    const dto = { ...updateTemplateDto };
+
+    // Upload thumbnail if provided
+    if (files?.thumbnail?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(
+        files.thumbnail[0],
+      );
+      dto.thumbnail = result.secure_url;
+    }
+
+    // Upload splash image if provided (only ONE file based on splash type)
+    if (files?.splashImage?.[0]) {
+      const result = await this.cloudinaryService.uploadImage(
+        files.splashImage[0],
+      );
+      const splashType = dto.splashScreen?.type;
+
+      if (splashType === 'image') {
+        if (!dto.splashScreen) dto.splashScreen = {} as any;
+        dto.splashScreen!.fullImage = result.secure_url;
+      } else if (splashType === 'animation') {
+        if (!dto.splashScreen) dto.splashScreen = {} as any;
+        dto.splashScreen!.animationJson = result.secure_url;
+      } else {
+        // Default: 'logo' type
+        if (!dto.splashScreen) dto.splashScreen = {} as any;
+        dto.splashScreen!.logoImage = result.secure_url;
+      }
+    }
+
     const template = await this.templateModel.findOneAndUpdate(
       {
         _id: templateId,
         owner: new Types.ObjectId(ownerId),
       },
-      updateTemplateDto,
+      dto,
       {
         new: true,
         runValidators: true,

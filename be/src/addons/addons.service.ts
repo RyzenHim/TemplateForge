@@ -6,11 +6,14 @@ import { Addon, AddonDocument } from './schemas/addon.schema';
 import { CreateAddonDto } from './dto/create-addon.dto';
 import { UpdateAddonDto } from './dto/update-addon.dto';
 
+import { CloudinaryService } from '../uploads/cloudinary/cloudinary.service';
+
 @Injectable()
 export class AddonsService {
   constructor(
     @InjectModel(Addon.name)
     private readonly addonModel: Model<AddonDocument>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   private mapAddon(addon: AddonDocument) {
@@ -27,9 +30,15 @@ export class AddonsService {
     };
   }
 
-  async create(createAddonDto: CreateAddonDto, userId: string) {
+  async create(createAddonDto: CreateAddonDto, userId: string, file?: Express.Multer.File) {
+    const dto = { ...createAddonDto };
+    if (file) {
+      const result = await this.cloudinaryService.uploadImage(file);
+      dto.icon = result.secure_url;
+    }
+
     const addon = await this.addonModel.create({
-      ...createAddonDto,
+      ...dto,
       owner: new Types.ObjectId(userId),
     });
 
@@ -57,13 +66,19 @@ export class AddonsService {
     return this.mapAddon(addon);
   }
 
-  async update(id: string, updateAddonDto: UpdateAddonDto, userId: string) {
+  async update(id: string, updateAddonDto: UpdateAddonDto, userId: string, file?: Express.Multer.File) {
+    const dto = { ...updateAddonDto };
+    if (file) {
+      const result = await this.cloudinaryService.uploadImage(file);
+      dto.icon = result.secure_url;
+    }
+
     const addon = await this.addonModel.findOneAndUpdate(
       {
         _id: id,
         owner: new Types.ObjectId(userId),
       },
-      updateAddonDto,
+      dto,
       {
         returnDocument: 'after',
         runValidators: true,

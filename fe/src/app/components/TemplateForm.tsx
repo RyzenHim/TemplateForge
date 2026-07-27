@@ -237,23 +237,6 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
   }
 
   function onSubmit(data: TemplateValues) {
-    if (isEdit) {
-      if (!id) return;
-      updateTemplate(
-        { id, data },
-        {
-          onSuccess(response) {
-            showApiSuccess(response.message);
-            router.push(`/dashboard/templates/${id}`);
-          },
-          onError(error) {
-            showApiError(error);
-          },
-        },
-      );
-      return;
-    }
-
     // Build FormData for multipart upload
     const formData = new FormData();
 
@@ -287,6 +270,23 @@ export default function TemplateForm({ mode }: TemplateFormProps) {
       formData.append("splashImage", selectedFiles.animationJson);
     } else if (selectedFiles.logoImage) {
       formData.append("splashImage", selectedFiles.logoImage);
+    }
+
+    if (isEdit) {
+      if (!id) return;
+      updateTemplate(
+        { id, data: formData },
+        {
+          onSuccess(response) {
+            showApiSuccess(response.message);
+            router.push(`/dashboard/templates/${id}`);
+          },
+          onError(error) {
+            showApiError(error);
+          },
+        },
+      );
+      return;
     }
 
     createTemplateMutation.mutate(formData, {

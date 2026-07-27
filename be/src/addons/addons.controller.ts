@@ -7,8 +7,12 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AddonsService } from './addons.service';
@@ -22,11 +26,14 @@ export class AddonsController {
   constructor(private readonly addonsService: AddonsService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('icon', { storage: memoryStorage() }))
   create(
-    @Body() createAddonDto: CreateAddonDto,
+    @Body() body: Record<string, any>,
     @Req() req: AuthenticatedRequest,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.addonsService.create(createAddonDto, req.user.id);
+    const createAddonDto = body as unknown as CreateAddonDto;
+    return this.addonsService.create(createAddonDto, req.user.id, file);
   }
 
   @Get()
@@ -40,12 +47,15 @@ export class AddonsController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('icon', { storage: memoryStorage() }))
   update(
     @Param('id') id: string,
-    @Body() updateAddonDto: UpdateAddonDto,
+    @Body() body: Record<string, any>,
     @Req() req: AuthenticatedRequest,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.addonsService.update(id, updateAddonDto, req.user.id);
+    const updateAddonDto = body as unknown as UpdateAddonDto;
+    return this.addonsService.update(id, updateAddonDto, req.user.id, file);
   }
 
   @Delete(':id')

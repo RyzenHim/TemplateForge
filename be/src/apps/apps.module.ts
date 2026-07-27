@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { UploadsModule } from 'src/uploads/uploads.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppsController } from './apps.controller';
@@ -22,6 +23,7 @@ import {
         schema: TemplateSchema,
       },
     ]),
+    UploadsModule,
   ],
   controllers: [AppsController],
   providers: [AppsService],

@@ -16,22 +16,22 @@ export async function getAddon(id: string): Promise<Addon> {
 }
 
 export async function createAddon(
-  data: CreateAddonsRequest,
+  data: CreateAddonsRequest | FormData,
 ): Promise<{ message: string; addon: Addon }> {
   const response = await api.post<{ message: string; addon: Addon }>(
     "/addons",
-    data,
+    data
   );
   return response.data;
 }
 
 export async function updateAddon(
   id: string,
-  data: UpdateAddonsRequest,
+  data: UpdateAddonsRequest | FormData,
 ): Promise<{ message: string; addon: Addon }> {
   const response = await api.patch<{ message: string; addon: Addon }>(
     `/addons/${id}`,
-    data,
+    data
   );
   return response.data;
 }

@@ -7,7 +7,7 @@ import type {
 } from "../types/app.types";
 
 export async function createApp(
-  data: CreateAppRequest,
+  data: CreateAppRequest | FormData,
 ): Promise<CreateAppResponse> {
   const response = await api.post<CreateAppResponse>("/apps", data);
   return response.data;
@@ -25,7 +25,7 @@ export async function getApp(id: string): Promise<App> {
 
 export async function updateApp(
   id: string,
-  data: UpdateAppRequest,
+  data: UpdateAppRequest | FormData,
 ): Promise<CreateAppResponse> {
   const response = await api.patch<CreateAppResponse>(`/apps/${id}`, data);
 

@@ -13,12 +13,10 @@ export function useUpdateAddon() {
       data: Parameters<typeof updateAddon>[1];
     }) => updateAddon(id, data),
 
-    onSuccess: async (_data, variables) => {
-      // Wait for both cache invalidations to complete before navigating
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["addons"] }),
-        queryClient.invalidateQueries({ queryKey: ["addon", variables.id] }),
-      ]);
+    onSuccess: (_data, variables) => {
+      // Invalidate so next mount always refetches fresh data
+      queryClient.invalidateQueries({ queryKey: ["addons"] });
+      queryClient.invalidateQueries({ queryKey: ["addon", variables.id] });
     },
   });
 }

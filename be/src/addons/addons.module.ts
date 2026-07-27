@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { UploadsModule } from 'src/uploads/uploads.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AddonsController } from './addons.controller';
@@ -13,6 +14,7 @@ import { Addon, AddonSchema } from './schemas/addon.schema';
         schema: AddonSchema,
       },
     ]),
+    UploadsModule,
   ],
   controllers: [AddonsController],
   providers: [AddonsService],

@@ -9,12 +9,7 @@ import type {
 export async function createTemplate(
   data: CreateTemplateRequest | FormData,
 ): Promise<TemplateResponse> {
-  const response = await api.post<TemplateResponse>("/templates", data, {
-    headers:
-      data instanceof FormData
-        ? { "Content-Type": "multipart/form-data" }
-        : undefined,
-  });
+  const response = await api.post<TemplateResponse>("/templates", data);
   return response.data;
 }
 
@@ -35,7 +30,7 @@ export async function getTemplate(id: string): Promise<Template> {
 
 export async function updateTemplate(
   id: string,
-  data: UpdateTemplateRequest,
+  data: UpdateTemplateRequest | FormData,
 ): Promise<TemplateResponse> {
   const response = await api.patch<TemplateResponse>(`/templates/${id}`, data);
   return response.data;

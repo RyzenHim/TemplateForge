@@ -10,10 +10,10 @@ import AppCard from "@/app/components/ui/AppCard";
 import SearchBar from "@/app/components/ui/SearchBar";
 
 import { useApps } from "@/app/lib/hooks/app/useApps";
-import CreateAppModal from "./modals/CreateAppModal";
+import { useRouter } from "next/navigation";
 
 export default function AppsPage() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: apps = [], isLoading, isError } = useApps();
@@ -46,11 +46,6 @@ export default function AppsPage() {
 
   return (
     <>
-      <CreateAppModal
-        open={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
-
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
@@ -61,7 +56,7 @@ export default function AppsPage() {
 
           <Button
             className="flex items-center gap-2"
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => router.push("/dashboard/apps/create")}
           >
             <Plus size={18} />
             Create App
@@ -85,7 +80,7 @@ export default function AppsPage() {
 
               <Button
                 className="mt-6"
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={() => router.push("/dashboard/apps/create")}
               >
                 Create App
               </Button>

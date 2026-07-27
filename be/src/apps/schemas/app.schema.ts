@@ -5,6 +5,7 @@ import {
   SplashScreen,
   AppPermissions,
   AppSettings,
+  AddonSnapshot,
 } from 'src/common/schemas/app-configuration.schema';
 export type AppDocument = HydratedDocument<App>;
 
@@ -93,6 +94,12 @@ export class App {
     required: true,
   })
   appSettings!: AppSettings;
+
+  @Prop({
+    type: [AddonSnapshot],
+    default: [],
+  })
+  addons!: AddonSnapshot[];
 
   createdAt!: Date;
 

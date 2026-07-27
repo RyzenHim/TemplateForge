@@ -7,6 +7,9 @@ export interface Addon {
   icon?: string;
   category: string;
   platform: Platform;
+  owner?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateAddonsRequest {

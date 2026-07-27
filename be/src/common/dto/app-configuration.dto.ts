@@ -2,6 +2,8 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsMongoId,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -59,6 +61,32 @@ export class AppPermissionsDto {
 
   @IsBoolean()
   notifications!: boolean;
+}
+
+// --------------------
+// Addon Snapshot
+// --------------------
+
+export class AddonSnapshotDto {
+  @IsMongoId()
+  addonId!: string;
+
+  @IsString()
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
+  @IsString()
+  category!: string;
+
+  @IsString()
+  platform!: string;
 }
 
 // --------------------

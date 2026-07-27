@@ -36,6 +36,7 @@ export class AppsService {
       splashScreen: app.splashScreen,
       appPermissions: app.appPermissions,
       appSettings: app.appSettings,
+      addons: app.addons || [],
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
     };

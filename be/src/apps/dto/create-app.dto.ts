@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDefined,
   IsMongoId,
   IsOptional,
@@ -9,6 +10,7 @@ import {
 } from 'class-validator';
 
 import {
+  AddonSnapshotDto,
   AppPermissionsDto,
   AppSettingsDto,
   BrandingDto,
@@ -64,4 +66,10 @@ export class CreateAppDto {
   @ValidateNested()
   @Type(() => AppSettingsDto)
   appSettings!: AppSettingsDto;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AddonSnapshotDto)
+  addons?: AddonSnapshotDto[];
 }

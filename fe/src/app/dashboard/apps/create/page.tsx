@@ -34,9 +34,12 @@ import { useCreateApp } from "@/app/lib/hooks/app/useCreateApp";
 import { useCreateTemplate } from "@/app/lib/hooks/template/useCreateTemplate";
 import { usePublicTemplates } from "@/app/lib/hooks/template/usePublicTemplates";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
+import { useAddons } from "@/app/lib/hooks/addons/useAddons";
 import type { Template } from "@/app/lib/types/template.types";
+import type { Addon } from "@/app/lib/types/addons/addons.types";
 import Modal from "@/app/components/ui/Modal";
 import { getApiErrorMessage, showApiError } from "@/app/lib/utils";
+import Button from "@/app/components/ui/Button";
 
 const hexColor = z
   .string()
@@ -189,7 +192,7 @@ export default function CreateAppPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const draft = useAppSelector((state) => state.createApp);
-
+  const [isAddonModalOpen, setIsAddonModalOpen] = useState(false);
   const { mutate: createApp, isPending: isCreating } = useCreateApp();
 
   // console.log("createApp", createApp);
@@ -203,6 +206,7 @@ export default function CreateAppPage() {
     permissions: true,
     settings: true,
     template: true,
+    addOns: true,
   });
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
@@ -213,9 +217,11 @@ export default function CreateAppPage() {
     useTemplates();
   const { data: publicTemplates = [], isLoading: isLoadingPublic } =
     usePublicTemplates();
+  const { data: addons = [] } = useAddons();
+  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
-  console.log("privateTemplates", privateTemplates);
-  console.log("publicTemplates", publicTemplates);
+  // console.log("privateTemplates", privateTemplates);
+  // console.log("publicTemplates", publicTemplates);
 
   const reduxDefaults = useMemo<AppEditorValues>(
     () => ({
@@ -388,12 +394,6 @@ export default function CreateAppPage() {
 
   const onSubmit = useCallback(
     (formData: AppEditorValues) => {
-      const onSubmit = (formData: AppEditorValues) => {
-        console.log("===== SUBMIT =====");
-        console.log("formData", formData);
-        console.log("getValues()", getValues());
-        console.log("watch values", values);
-      };
       const appPayload = {
         name: formData.name,
         description: formData.description || undefined,
@@ -406,11 +406,19 @@ export default function CreateAppPage() {
         splashScreen: cloneValue(formData.splashScreen),
         appPermissions: cloneValue(formData.appPermissions),
         appSettings: cloneValue(formData.appSettings),
+        addons: selectedAddons.map((addon) => ({
+          addonId: addon.id,
+          name: addon.name,
+          description: addon.description,
+          icon: addon.icon,
+          category: addon.category,
+          platform: addon.platform,
+        })),
       };
-      console.log("formData.packageName:", formData.packageName);
-      console.log("getValues.packageName:", getValues("packageName"));
-      console.log("watch.packageName:", values.packageName);
-      console.log("appPayload", appPayload);
+      // console.log("formData.packageName:", formData.packageName);
+      // console.log("getValues.packageName:", getValues("packageName"));
+      // console.log("watch.packageName:", values.packageName);
+      // console.log("appPayload", appPayload);
 
       createApp(appPayload, {
         onSuccess: () => {
@@ -436,7 +444,17 @@ export default function CreateAppPage() {
         },
       });
     },
-    [draft.templateId, createApp, dispatch, router, setError, setOpenSections],
+    [
+      draft.templateId,
+      selectedAddons,
+      createApp,
+      dispatch,
+      router,
+      setError,
+      setOpenSections,
+      getValues,
+      values,
+    ],
   );
 
   function onSaveTemplateSubmit(data: SaveTemplateFormData) {
@@ -1163,6 +1181,144 @@ export default function CreateAppPage() {
                   </div>
                 </div>
               </EditorSection>
+
+              <EditorSection
+                title="Add-ons"
+                description="Select the addons for your app"
+                open={openSections.addOns}
+                onToggle={() => toggleSection("addOns")}
+              >
+                <div className="space-y-4">
+                  <Button
+                    type="button"
+                    onClick={() => setIsAddonModalOpen(true)}
+                  >
+                    Select Add-ons
+                  </Button>
+
+                  {selectedAddons.length > 0 && (
+                    <div className="space-y-2">
+                      {selectedAddons.map((addon) => (
+                        <div
+                          key={addon.id}
+                          className="flex items-center justify-between rounded-lg border p-3"
+                        >
+                          <div className="flex items-center gap-3">
+                            {addon.icon && (
+                              <img
+                                src={addon.icon}
+                                alt={addon.name}
+                                className="h-8 w-8 rounded object-cover"
+                              />
+                            )}
+                            <div>
+                              <p className="text-sm font-medium">
+                                {addon.name}
+                              </p>
+                              <p className="text-xs text-zinc-500">
+                                {addon.platform} • {addon.category}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              console.log("Addon details:", addon);
+                              setSelectedAddons((prev) =>
+                                prev.filter((a) => a.id !== addon.id),
+                              );
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Modal
+                  open={isAddonModalOpen}
+                  onClose={() => setIsAddonModalOpen(false)}
+                  title="Select Add-ons"
+                  description="Choose add-ons to include in your app."
+                  width="lg"
+                >
+                  <div className="space-y-3">
+                    {addons.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-zinc-500">
+                        No add-ons available. Create one first.
+                      </p>
+                    ) : (
+                      addons.map((addon) => {
+                        const isSelected = selectedAddons.some(
+                          (a) => a.id === addon.id,
+                        );
+                        return (
+                          <button
+                            key={addon.id}
+                            type="button"
+                            onClick={() => {
+                              console.log("Selected addon:", addon);
+                              if (isSelected) {
+                                setSelectedAddons((prev) =>
+                                  prev.filter((a) => a.id !== addon.id),
+                                );
+                              } else {
+                                setSelectedAddons((prev) => [...prev, addon]);
+                              }
+                            }}
+                            className={`w-full rounded-xl border p-4 text-left transition ${
+                              isSelected
+                                ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10"
+                                : "border-zinc-200 hover:border-indigo-400 hover:bg-indigo-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                {addon.icon && (
+                                  <img
+                                    src={addon.icon}
+                                    alt={addon.name}
+                                    className="h-10 w-10 rounded-lg object-cover"
+                                  />
+                                )}
+                                <div>
+                                  <p className="font-semibold text-zinc-900 dark:text-white">
+                                    {addon.name}
+                                  </p>
+                                  <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                                    {addon.platform} • {addon.category}
+                                  </p>
+                                  {addon.description && (
+                                    <p className="mt-1 text-xs text-zinc-400 line-clamp-1">
+                                      {addon.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <span className="text-sm font-medium text-indigo-600">
+                                  Selected
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                    <div className="flex justify-end pt-3">
+                      <Button
+                        type="button"
+                        onClick={() => setIsAddonModalOpen(false)}
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
+                </Modal>
+              </EditorSection>
             </div>
 
             <aside className="lg:sticky lg:top-6 lg:self-start">
@@ -1413,3 +1569,5 @@ function PreviewItem({
     </div>
   );
 }
+
+// AddOns removed — now inlined in the EditorSection above

@@ -42,6 +42,15 @@ export interface AppSettings {
   disableScrollBounce: boolean;
 }
 
+export interface AppAddon {
+  addonId: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  category: string;
+  platform: string;
+}
+
 export interface App {
   id: string;
   name: string;
@@ -58,6 +67,7 @@ export interface App {
   splashScreen: SplashScreen;
   appPermissions: AppPermissions;
   appSettings: AppSettings;
+  addons: AppAddon[];
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +84,7 @@ export interface CreateAppRequest {
   splashScreen: SplashScreen;
   appPermissions: AppPermissions;
   appSettings: AppSettings;
+  addons?: AppAddon[];
 }
 
 export type UpdateAppRequest = Partial<CreateAppRequest>;

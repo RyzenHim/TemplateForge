@@ -19,9 +19,14 @@ import {
 } from "lucide-react";
 
 import Loader from "@/app/components/ui/Loader";
+import Modal from "@/app/components/ui/Modal";
+import Button from "@/app/components/ui/Button";
 
 import { useApp } from "@/app/lib/hooks/app/useApp";
 import { useUpdateApp } from "@/app/lib/hooks/app/useUpdateApp";
+import { useAddons } from "@/app/lib/hooks/addons/useAddons";
+import type { Addon } from "@/app/lib/types/addons/addons.types";
+import type { AppAddon } from "@/app/lib/types/app.types";
 import {
   showApiError,
   showApiSuccess,
@@ -168,12 +173,17 @@ export default function EditAppPage() {
   const { data: app, isLoading } = useApp(id);
   const { mutate: updateApp, isPending: isUpdating } = useUpdateApp();
 
+  const { data: availableAddons = [] } = useAddons();
+  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
+  const [isAddonModalOpen, setIsAddonModalOpen] = useState(false);
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     basic: true,
     branding: true,
     splash: true,
     permissions: true,
     settings: true,
+    addOns: true,
   });
 
   const {
@@ -234,6 +244,21 @@ export default function EditAppPage() {
         disableScrollBounce: Boolean(app.appSettings?.disableScrollBounce),
       },
     });
+    // Hydrate selected addons
+    if (app.addons && app.addons.length > 0) {
+      setSelectedAddons(
+        app.addons.map((a: AppAddon) => ({
+          id: a.addonId,
+          name: a.name,
+          description: a.description || "",
+          icon: a.icon,
+          category: a.category,
+          platform: a.platform,
+          createdAt: "",
+          updatedAt: "",
+        })),
+      );
+    }
     setHasHydrated(true);
   }, [app, hasHydrated, reset]);
 
@@ -253,7 +278,17 @@ export default function EditAppPage() {
     updateApp(
       {
         id,
-        data,
+        data: {
+          ...data,
+          addons: selectedAddons.map((addon) => ({
+            addonId: addon.id,
+            name: addon.name,
+            description: addon.description,
+            icon: addon.icon,
+            category: addon.category,
+            platform: addon.platform,
+          })),
+        },
       },
       {
         onSuccess(response) {
@@ -647,6 +682,143 @@ export default function EditAppPage() {
                   ))}
                 </div>
               </div>
+            </EditorSection>
+
+            <EditorSection
+              title="Add-ons"
+              description="Manage add-ons attached to this app."
+              open={openSections.addOns}
+              onToggle={() => toggleSection("addOns")}
+            >
+              <div className="space-y-4">
+                <Button type="button" onClick={() => setIsAddonModalOpen(true)}>
+                  Select Add-ons
+                </Button>
+
+                {selectedAddons.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedAddons.map((addon) => (
+                      <div
+                        key={addon.id}
+                        className="flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-700"
+                      >
+                        <div className="flex items-center gap-3">
+                          {addon.icon && (
+                            <img
+                              src={addon.icon}
+                              alt={addon.name}
+                              className="h-8 w-8 rounded object-cover"
+                            />
+                          )}
+                          <div>
+                            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                              {addon.name}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {addon.platform} &bull; {addon.category}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedAddons((prev) =>
+                              prev.filter((a) => a.id !== addon.id),
+                            )
+                          }
+                          className="text-xs font-medium text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-zinc-500">
+                    No add-ons selected. Click "Select Add-ons" to add some.
+                  </p>
+                )}
+              </div>
+
+              <Modal
+                open={isAddonModalOpen}
+                onClose={() => setIsAddonModalOpen(false)}
+                title="Select Add-ons"
+                description="Choose add-ons to include in this app."
+                width="lg"
+              >
+                <div className="space-y-3">
+                  {availableAddons.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-zinc-500">
+                      No add-ons available. Create one first.
+                    </p>
+                  ) : (
+                    availableAddons.map((addon) => {
+                      const isSelected = selectedAddons.some(
+                        (a) => a.id === addon.id,
+                      );
+                      return (
+                        <button
+                          key={addon.id}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedAddons((prev) =>
+                                prev.filter((a) => a.id !== addon.id),
+                              );
+                            } else {
+                              setSelectedAddons((prev) => [...prev, addon]);
+                            }
+                          }}
+                          className={`w-full rounded-xl border p-4 text-left transition ${
+                            isSelected
+                              ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10"
+                              : "border-zinc-200 hover:border-indigo-400 hover:bg-indigo-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              {addon.icon && (
+                                <img
+                                  src={addon.icon}
+                                  alt={addon.name}
+                                  className="h-10 w-10 rounded-lg object-cover"
+                                />
+                              )}
+                              <div>
+                                <p className="font-semibold text-zinc-900 dark:text-white">
+                                  {addon.name}
+                                </p>
+                                <p className="mt-0.5 text-sm text-zinc-500">
+                                  {addon.platform} &bull; {addon.category}
+                                </p>
+                                {addon.description && (
+                                  <p className="mt-1 line-clamp-1 text-xs text-zinc-400">
+                                    {addon.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <span className="text-sm font-medium text-indigo-600">
+                                Selected
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                  <div className="flex justify-end pt-3">
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddonModalOpen(false)}
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              </Modal>
             </EditorSection>
           </div>
 

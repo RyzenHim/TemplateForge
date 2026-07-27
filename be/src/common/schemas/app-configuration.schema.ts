@@ -1,4 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
 @Schema({ _id: false })
 export class Branding {
@@ -64,6 +65,30 @@ export class AppPermissions {
 
   @Prop({ default: false })
   notifications!: boolean;
+}
+
+@Schema({ _id: false })
+export class AddonSnapshot {
+  @Prop({
+    type: Types.ObjectId,
+    required: true,
+  })
+  addonId!: Types.ObjectId;
+
+  @Prop({ required: true, trim: true })
+  name!: string;
+
+  @Prop({ default: '', trim: true })
+  description!: string;
+
+  @Prop({ default: '', trim: true })
+  icon!: string;
+
+  @Prop({ required: true, trim: true })
+  category!: string;
+
+  @Prop({ required: true })
+  platform!: string;
 }
 
 @Schema({ _id: false })

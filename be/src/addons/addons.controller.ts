@@ -35,8 +35,8 @@ export class AddonsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-    return this.addonsService.findOne(id, req.user.id);
+  findOne(@Param('id') id: string) {
+    return this.addonsService.findOne(id);
   }
 
   @Patch(':id')

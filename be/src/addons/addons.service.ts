@@ -40,18 +40,15 @@ export class AddonsService {
   }
 
   async findAll(userId: string) {
-    const addons = await this.addonModel.find({
-      owner: new Types.ObjectId(userId),
-    });
+    // Public: return all addons regardless of owner
+    const addons = await this.addonModel.find();
 
     return addons.map((addon) => this.mapAddon(addon));
   }
 
-  async findOne(id: string, userId: string) {
-    const addon = await this.addonModel.findOne({
-      _id: id,
-      owner: new Types.ObjectId(userId),
-    });
+  async findOne(id: string) {
+    // Public: find addon by id without owner filter
+    const addon = await this.addonModel.findById(id);
 
     if (!addon) {
       throw new NotFoundException('Addon not found');
@@ -68,7 +65,7 @@ export class AddonsService {
       },
       updateAddonDto,
       {
-        new: true,
+        returnDocument: 'after',
         runValidators: true,
       },
     );

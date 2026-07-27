@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ChevronRight,
   Globe,
+  Puzzle,
   Settings2,
   ShieldAlert,
   Smartphone,
@@ -38,9 +39,13 @@ export default function AppDetailsPage() {
             Application Not Found
           </h2>
           <p className="mt-2 text-sm text-zinc-500">
-            The application you are trying to view does not exist or you do not have permission to view it.
+            The application you are trying to view does not exist or you do not
+            have permission to view it.
           </p>
-          <Button className="mt-6" onClick={() => router.push("/dashboard/apps")}>
+          <Button
+            className="mt-6"
+            onClick={() => router.push("/dashboard/apps")}
+          >
             Back to Apps
           </Button>
         </div>
@@ -52,17 +57,49 @@ export default function AppDetailsPage() {
     { key: "camera", name: "Camera", desc: "Allow capturing photos & videos" },
     { key: "microphone", name: "Microphone", desc: "Allow recording audio" },
     { key: "location", name: "Location", desc: "Allow accessing GPS location" },
-    { key: "storage", name: "Storage", desc: "Allow reading/writing local files" },
-    { key: "notifications", name: "Notifications", desc: "Allow sending push notifications" },
+    {
+      key: "storage",
+      name: "Storage",
+      desc: "Allow reading/writing local files",
+    },
+    {
+      key: "notifications",
+      name: "Notifications",
+      desc: "Allow sending push notifications",
+    },
   ] as const;
 
   const settingsList = [
-    { key: "fullScreen", name: "Full Screen Mode", desc: "Hides system status/navigation bars" },
-    { key: "pinchToZoom", name: "Pinch to Zoom", desc: "Allows users to zoom in/out of pages" },
-    { key: "callbackOnResume", name: "Resume Callback", desc: "Executes resume events when app is foregrounded" },
-    { key: "disableCaching", name: "Disable Cache", desc: "Force loads fresh web contents" },
-    { key: "kioskMode", name: "Kiosk Mode", desc: "Locks app in active full-screen focus" },
-    { key: "disableScrollBounce", name: "Disable Scroll Bounce", desc: "Disables overscroll physics bounce" },
+    {
+      key: "fullScreen",
+      name: "Full Screen Mode",
+      desc: "Hides system status/navigation bars",
+    },
+    {
+      key: "pinchToZoom",
+      name: "Pinch to Zoom",
+      desc: "Allows users to zoom in/out of pages",
+    },
+    {
+      key: "callbackOnResume",
+      name: "Resume Callback",
+      desc: "Executes resume events when app is foregrounded",
+    },
+    {
+      key: "disableCaching",
+      name: "Disable Cache",
+      desc: "Force loads fresh web contents",
+    },
+    {
+      key: "kioskMode",
+      name: "Kiosk Mode",
+      desc: "Locks app in active full-screen focus",
+    },
+    {
+      key: "disableScrollBounce",
+      name: "Disable Scroll Bounce",
+      desc: "Disables overscroll physics bounce",
+    },
   ] as const;
 
   return (
@@ -79,9 +116,13 @@ export default function AppDetailsPage() {
           </button>
           <div>
             <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-              <Link href="/dashboard/apps" className="hover:underline">Apps</Link>
+              <Link href="/dashboard/apps" className="hover:underline">
+                Apps
+              </Link>
               <ChevronRight size={12} />
-              <span className="font-medium text-zinc-900 dark:text-white">{app.name}</span>
+              <span className="font-medium text-zinc-900 dark:text-white">
+                {app.name}
+              </span>
             </div>
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
               App Configuration
@@ -105,19 +146,27 @@ export default function AppDetailsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-4xl shadow-md border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700">
               {app.icon ? (
-                <img src={app.icon} alt={app.name} className="h-full w-full object-cover rounded-2xl" />
+                <img
+                  src={app.icon}
+                  alt={app.name}
+                  className="h-full w-full object-cover rounded-2xl"
+                />
               ) : (
                 "📱"
               )}
             </div>
             <div className="min-w-0 space-y-1">
               <div className="flex items-center gap-2.5">
-                <h2 className="text-2xl font-bold text-zinc-950 dark:text-white">{app.name}</h2>
+                <h2 className="text-2xl font-bold text-zinc-950 dark:text-white">
+                  {app.name}
+                </h2>
                 <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold capitalize text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                   {app.status || "active"}
                 </span>
               </div>
-              <p className="text-sm font-mono text-zinc-500">{app.packageName}</p>
+              <p className="text-sm font-mono text-zinc-500">
+                {app.packageName}
+              </p>
               {app.description && (
                 <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
                   {app.description}
@@ -128,11 +177,17 @@ export default function AppDetailsPage() {
 
           <div className="grid grid-cols-2 gap-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50 p-4 text-sm md:w-80 dark:border-zinc-800 dark:bg-zinc-900/30">
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Version</p>
-              <p className="font-semibold text-zinc-950 dark:text-zinc-50">{app.version || "1.0.0"}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Version
+              </p>
+              <p className="font-semibold text-zinc-950 dark:text-zinc-50">
+                {app.version || "1.0.0"}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Website</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Website
+              </p>
               {app.websiteUrl ? (
                 <a
                   href={app.websiteUrl}
@@ -147,7 +202,9 @@ export default function AppDetailsPage() {
               )}
             </div>
             <div className="col-span-2 border-t border-zinc-200/60 pt-2 dark:border-zinc-800">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Last Modified</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Last Modified
+              </p>
               <p className="text-zinc-950 dark:text-zinc-50">
                 {new Date(app.updatedAt).toLocaleString(undefined, {
                   dateStyle: "medium",
@@ -167,16 +224,22 @@ export default function AppDetailsPage() {
             <div className="rounded-lg bg-indigo-50 p-1.5 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
               <Sparkles size={18} />
             </div>
-            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Branding & Design</h3>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              Branding & Design
+            </h3>
           </div>
 
           <div className="space-y-4">
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Primary Color</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Primary Color
+              </p>
               <div className="mt-1.5 flex items-center gap-2">
                 <span
                   className="h-8 w-8 rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-700"
-                  style={{ backgroundColor: app.branding?.primaryColor || "#4F46E5" }}
+                  style={{
+                    backgroundColor: app.branding?.primaryColor || "#4F46E5",
+                  }}
                 />
                 <span className="font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
                   {app.branding?.primaryColor || "#4F46E5"}
@@ -192,22 +255,31 @@ export default function AppDetailsPage() {
             <div className="rounded-lg bg-violet-50 p-1.5 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
               <Smartphone size={18} />
             </div>
-            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">Splash Screen</h3>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              Splash Screen
+            </h3>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Splash Type</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Splash Type
+              </p>
               <p className="mt-1 font-semibold capitalize text-zinc-900 dark:text-zinc-100">
                 {app.splashScreen?.type || "logo"}
               </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Background Color</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Background Color
+              </p>
               <div className="mt-1.5 flex items-center gap-2">
                 <span
                   className="h-6 w-6 rounded-md border border-zinc-200 shadow-sm dark:border-zinc-700"
-                  style={{ backgroundColor: app.splashScreen?.backgroundColor || "#FFFFFF" }}
+                  style={{
+                    backgroundColor:
+                      app.splashScreen?.backgroundColor || "#FFFFFF",
+                  }}
                 />
                 <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
                   {app.splashScreen?.backgroundColor || "#FFFFFF"}
@@ -216,28 +288,36 @@ export default function AppDetailsPage() {
             </div>
             {app.splashScreen?.type === "animation" ? (
               <div className="col-span-2">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Animation URL (Lottie JSON)</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Animation URL (Lottie JSON)
+                </p>
                 <p className="mt-1 break-all text-xs font-mono text-zinc-800 dark:text-zinc-200">
                   {app.splashScreen.animationJson || "None"}
                 </p>
               </div>
             ) : app.splashScreen?.type === "image" ? (
               <div className="col-span-2">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Splash Image URL</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Splash Image URL
+                </p>
                 <p className="mt-1 break-all text-xs font-mono text-zinc-800 dark:text-zinc-200">
                   {app.splashScreen.fullImage || "None"}
                 </p>
               </div>
             ) : (
               <div className="col-span-2">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Centred Logo URL</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Centred Logo URL
+                </p>
                 <p className="mt-1 break-all text-xs font-mono text-zinc-800 dark:text-zinc-200">
                   {app.splashScreen?.logoImage || "None"}
                 </p>
               </div>
             )}
             <div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Playback Behaviour</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Playback Behaviour
+              </p>
               <p className="mt-1 font-semibold capitalize text-zinc-900 dark:text-zinc-100">
                 {app.splashScreen?.playbackBehaviour || "once"}
               </p>
@@ -251,7 +331,9 @@ export default function AppDetailsPage() {
             <div className="rounded-lg bg-emerald-50 p-1.5 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
               <ShieldAlert size={18} />
             </div>
-            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">App Permissions</h3>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              App Permissions
+            </h3>
           </div>
 
           <div className="grid gap-3">
@@ -263,8 +345,12 @@ export default function AppDetailsPage() {
                   className="flex items-center justify-between rounded-xl border border-zinc-200/60 p-3 dark:border-zinc-800 bg-zinc-50/20"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">{name}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{desc}</p>
+                    <p className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+                      {name}
+                    </p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {desc}
+                    </p>
                   </div>
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
@@ -287,23 +373,32 @@ export default function AppDetailsPage() {
             <div className="rounded-lg bg-amber-50 p-1.5 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
               <Settings2 size={18} />
             </div>
-            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">App Settings</h3>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              App Settings
+            </h3>
           </div>
 
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Screen Orientation</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Screen Orientation
+                </p>
                 <p className="mt-1 font-semibold capitalize text-zinc-900 dark:text-zinc-100">
                   {app.appSettings?.orientation || "portrait"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Status Bar Color</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Status Bar Color
+                </p>
                 <div className="mt-1.5 flex items-center gap-2">
                   <span
                     className="h-5 w-5 rounded border border-zinc-200 shadow-sm dark:border-zinc-700"
-                    style={{ backgroundColor: app.appSettings?.statusBarColor || "#FFFFFF" }}
+                    style={{
+                      backgroundColor:
+                        app.appSettings?.statusBarColor || "#FFFFFF",
+                    }}
                   />
                   <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
                     {app.appSettings?.statusBarColor || "#FFFFFF"}
@@ -311,11 +406,16 @@ export default function AppDetailsPage() {
                 </div>
               </div>
               <div className="sm:col-span-2">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">System Nav Bar Color</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  System Nav Bar Color
+                </p>
                 <div className="mt-1.5 flex items-center gap-2">
                   <span
                     className="h-5 w-5 rounded border border-zinc-200 shadow-sm dark:border-zinc-700"
-                    style={{ backgroundColor: app.appSettings?.systemNavigationBarColor || "#FFFFFF" }}
+                    style={{
+                      backgroundColor:
+                        app.appSettings?.systemNavigationBarColor || "#FFFFFF",
+                    }}
                   />
                   <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
                     {app.appSettings?.systemNavigationBarColor || "#FFFFFF"}
@@ -328,14 +428,21 @@ export default function AppDetailsPage() {
               {settingsList.map(({ key, name, desc }) => {
                 const enabled = Boolean(app.appSettings?.[key]);
                 return (
-                  <div key={key} className="flex items-center justify-between text-sm py-1.5">
+                  <div
+                    key={key}
+                    className="flex items-center justify-between text-sm py-1.5"
+                  >
                     <div>
-                      <p className="font-medium text-zinc-900 dark:text-zinc-100">{name}</p>
+                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                        {name}
+                      </p>
                       <p className="text-xs text-zinc-500">{desc}</p>
                     </div>
                     <span
                       className={`h-2.5 w-2.5 rounded-full ${
-                        enabled ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"
+                        enabled
+                          ? "bg-emerald-500"
+                          : "bg-zinc-300 dark:bg-zinc-700"
                       }`}
                     />
                   </div>
@@ -343,6 +450,69 @@ export default function AppDetailsPage() {
               })}
             </div>
           </div>
+        </Card>
+
+        {/* Add-ons */}
+        <Card className="p-6 space-y-6">
+          <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 dark:border-zinc-800">
+            <div className="rounded-lg bg-purple-50 p-1.5 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
+              <Puzzle size={18} />
+            </div>
+            <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+              Add-ons
+            </h3>
+          </div>
+
+          {app.addons && app.addons.length > 0 ? (
+            <div className="space-y-3">
+              {app.addons.map((addon) => (
+                <div
+                  key={addon.addonId}
+                  className="flex items-start gap-4 rounded-xl border border-zinc-200/60 bg-zinc-50/20 p-4 dark:border-zinc-800"
+                >
+                  {addon.icon ? (
+                    <img
+                      src={addon.icon}
+                      alt={addon.name}
+                      className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-sm font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
+                      {addon.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                        {addon.name}
+                      </p>
+                      <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        {addon.platform}
+                      </span>
+                    </div>
+                    {addon.description && (
+                      <p className="mt-0.5 text-sm text-zinc-500 line-clamp-2">
+                        {addon.description}
+                      </p>
+                    )}
+                    <span className="mt-1.5 inline-block rounded-md bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">
+                      {addon.category}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Puzzle className="h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+              <p className="mt-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                No add-ons selected
+              </p>
+              <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                Add-ons can be selected when creating or editing the app.
+              </p>
+            </div>
+          )}
         </Card>
       </div>
     </div>

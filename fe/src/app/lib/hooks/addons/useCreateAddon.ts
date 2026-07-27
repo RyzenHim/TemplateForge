@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { createAddon } from "../../services/add_ons.service";
+import { showApiSuccess, showApiError } from "../../utils";
 
 export function useCreateAddon() {
   const queryClient = useQueryClient();
@@ -9,13 +10,14 @@ export function useCreateAddon() {
   return useMutation({
     mutationFn: createAddon,
 
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["addons"] });
+      showApiSuccess(response.message);
       router.push("/dashboard/addons");
     },
 
     onError: (error: Error) => {
-      console.error("Failed to create addon:", error);
+      showApiError(error);
     },
   });
 }

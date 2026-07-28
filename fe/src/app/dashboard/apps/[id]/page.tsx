@@ -178,6 +178,14 @@ export default function AppDetailsPage() {
           <div className="grid grid-cols-2 gap-4 rounded-xl border border-zinc-200/60 bg-zinc-50/50 p-4 text-sm md:w-80 dark:border-zinc-800 dark:bg-zinc-900/30">
             <div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Platform
+              </p>
+              <p className="font-semibold text-zinc-950 dark:text-zinc-50">
+                {app.platform || "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Version
               </p>
               <p className="font-semibold text-zinc-950 dark:text-zinc-50">

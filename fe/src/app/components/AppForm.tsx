@@ -956,10 +956,8 @@ export default function AppForm({ mode }: AppFormProps) {
                         const newPlatform = e.target.value;
                         const prevPlatform = previousPlatformRef.current;
 
-                        // In edit mode, if platform actually changes and has hydrated, show warning
+                        // If a platform was already selected, changing it while having add-ons shows a warning
                         if (
-                          isEdit &&
-                          hasHydrated &&
                           prevPlatform &&
                           newPlatform &&
                           newPlatform !== prevPlatform &&
@@ -972,7 +970,9 @@ export default function AppForm({ mode }: AppFormProps) {
                             shouldDirty: true,
                             shouldValidate: true,
                           });
-                          previousPlatformRef.current = newPlatform;
+                          if (newPlatform) {
+                            previousPlatformRef.current = newPlatform;
+                          }
                         }
                       }}
                     >
@@ -1576,7 +1576,10 @@ export default function AppForm({ mode }: AppFormProps) {
                   </div>
                   <div className="mt-6 space-y-3">
                     <PreviewItem label="App name" value={values.name || "—"} />
-                    <PreviewItem label="Platform" value={values.platform || "—"} />
+                    <PreviewItem
+                      label="Platform"
+                      value={values.platform || "—"}
+                    />
                     <PreviewItem
                       label="Package"
                       value={values.packageName || "—"}

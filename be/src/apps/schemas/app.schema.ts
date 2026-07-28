@@ -76,7 +76,7 @@ export class App {
   sourceTemplate!: Types.ObjectId | null;
 
   @Prop({
-    enum: ['draft', 'published', 'archived'],
+    enum: ['draft', 'purchased', 'published', 'archived'],
     default: 'draft',
   })
   status!: string;

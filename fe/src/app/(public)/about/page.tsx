@@ -1,4 +1,8 @@
+"use client";
+
 export default function AboutPage() {
+  console.log("window.Razorpay", window.Razorpay);
+
   return (
     <section className="mx-auto max-w-4xl px-6 py-16">
       <h1 className="text-4xl font-bold text-zinc-900 dark:text-white">

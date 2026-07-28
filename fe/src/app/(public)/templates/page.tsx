@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
@@ -35,7 +35,9 @@ export default function PublicTemplatePage() {
       return haystacks.some((value) => value.includes(normalizedQuery));
     });
   }, [publicTemplates, searchTerm]);
-
+  useEffect(() => {
+    console.log("window.Razorpay", window.Razorpay);
+  }, []);
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-10">
       <div className="flex items-center justify-between">

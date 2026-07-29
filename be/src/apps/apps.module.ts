@@ -6,10 +6,7 @@ import { AppsController } from './apps.controller';
 import { AppsService } from './apps.service';
 
 import { App, AppSchema } from './schemas/app.schema';
-import {
-  Template,
-  TemplateSchema,
-} from '../templates/schemas/template.schema';
+import { Template, TemplateSchema } from '../templates/schemas/template.schema';
 
 @Module({
   imports: [
@@ -27,5 +24,6 @@ import {
   ],
   controllers: [AppsController],
   providers: [AppsService],
+  exports: [AppsService],
 })
 export class AppsModule {}

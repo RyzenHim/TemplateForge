@@ -212,4 +212,20 @@ export class AppsService {
       message: 'App deleted successfully',
     };
   }
+
+  async findDocumentByIdAndOwner(
+    appId: string,
+    userId: string,
+  ): Promise<AppDocument> {
+    const app = await this.appModel.findOne({
+      _id: appId,
+      owner: new Types.ObjectId(userId),
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return app;
+  }
 }

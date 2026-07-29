@@ -9,6 +9,13 @@ import {
 } from '../../common/schemas/app-configuration.schema';
 export type AppDocument = HydratedDocument<App>;
 
+export enum AppStatus {
+  DRAFT = 'draft',
+  PURCHASED = 'purchased',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}
+
 @Schema({
   timestamps: true,
 })
@@ -76,10 +83,10 @@ export class App {
   sourceTemplate!: Types.ObjectId | null;
 
   @Prop({
-    enum: ['draft', 'purchased', 'published', 'archived'],
-    default: 'draft',
+    enum: Object.values(AppStatus),
+    default: AppStatus.DRAFT,
   })
-  status!: string;
+  status!: AppStatus;
 
   // Copied from template when app is created
   @Prop({

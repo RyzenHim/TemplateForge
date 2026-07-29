@@ -11,6 +11,8 @@ import type { App } from "@/app/lib/types/app.types";
 import { useDeleteApp } from "@/app/lib/hooks/app/useDeleteApp";
 import { useQueryClient } from "@tanstack/react-query";
 import Button from "./Button";
+import { useCreateOrder } from "@/app/lib/hooks/payment/useCreateOrder";
+import { openRazorpayCheckout } from "@/app/lib/services/razorpay.service";
 
 interface AppCardProps {
   app: App;
@@ -31,9 +33,25 @@ function formatUpdatedAt(value: string) {
 export default function AppCard({ app }: AppCardProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const { mutateAsync: createOrder } = useCreateOrder();
   const queryClient = useQueryClient();
 
   const { mutate: deleteApp } = useDeleteApp();
+
+  const handlePurchase = async () => {
+    try {
+      const order = await createOrder({ appId: app.id });
+      openRazorpayCheckout({
+        order,
+        onSuccess: (response) => {
+          (console.log("payemnt success"), response);
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Unable to create payment");
+    }
+  };
 
   return (
     <Card className="group flex h-full flex-col transition-all duration-200 hover:-translate-y-1 hover:border-indigo-500/50 hover:shadow-xl">
@@ -64,11 +82,11 @@ export default function AppCard({ app }: AppCardProps) {
         </div>
 
         <span className="shrink-0 rounded-full border border-zinc-200 bg-gray-900 px-3 py-1 text-xs font-medium capitalize text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
-          {app.status || "active"}
+          {app.status || "Draft"}
         </span>
 
         <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-          {app.platform}
+          {app.platform || "Choose platform"}
         </span>
       </div>
 
@@ -126,6 +144,10 @@ export default function AppCard({ app }: AppCardProps) {
             <Trash2 size={16} />
             {isDeleting ? "Deleting…" : "Delete"}
           </Button>
+
+          {app.status === "draft" && (
+            <Button onClick={handlePurchase}>Purchase</Button>
+          )}
 
           <Link
             href={`/dashboard/apps/${app.id}/edit`}

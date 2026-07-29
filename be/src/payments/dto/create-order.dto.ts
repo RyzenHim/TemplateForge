@@ -1,5 +1,6 @@
-import { IsString } from 'class-validator';
+import { IsMongoId } from 'class-validator';
+
 export class CreateOrderDto {
-  @IsString({ message: 'Plan ID should be a string.' })
-  planId!: string;
+  @IsMongoId()
+  appId!: string;
 }

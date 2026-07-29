@@ -2,9 +2,6 @@ import { IsString } from 'class-validator';
 
 export class VerifyPaymentDto {
   @IsString()
-  appId!: string;
-
-  @IsString()
   razorpay_payment_id!: string;
 
   @IsString()

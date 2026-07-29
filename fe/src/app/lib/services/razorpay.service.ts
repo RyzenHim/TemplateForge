@@ -1,11 +1,19 @@
-import { CreateOrderResponse } from "../types/payment.types";
+import {
+  CreateOrderResponse,
+  RazorpayPaymentFailureResponse,
+  RazorpayPaymentSuccessResponse,
+} from "../types/payment.types";
 
 interface RazorpayOptions {
   order: CreateOrderResponse;
-  onSuccess: (response: any) => void;
+  onSuccess: (response: RazorpayPaymentSuccessResponse) => void;
+  onFailure?: (response: RazorpayPaymentFailureResponse) => void;
 }
-
-export const openRazorpayCheckout = ({ order, onSuccess }: RazorpayOptions) => {
+export const openRazorpayCheckout = ({
+  order,
+  onSuccess,
+  onFailure,
+}: RazorpayOptions) => {
   const razorpay = new window.Razorpay({
     key: order.key,
     amount: order.amount,
@@ -13,12 +21,14 @@ export const openRazorpayCheckout = ({ order, onSuccess }: RazorpayOptions) => {
     name: "TemplateForge",
     description: order.appName,
     order_id: order.orderId,
-
     handler: onSuccess,
-
     theme: {
       color: "#4F46E5",
     },
+  });
+
+  razorpay.on("payment.failed", (response: RazorpayPaymentFailureResponse) => {
+    onFailure?.(response);
   });
 
   razorpay.open();

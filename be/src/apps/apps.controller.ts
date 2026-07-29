@@ -129,4 +129,9 @@ export class AppsController {
   remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.appsService.remove(id, req.user.id);
   }
+
+  @Patch(':id/publish')
+  publishAppp(@Param('id') appId: string, @Req() req: AuthenticatedRequest) {
+    return this.appsService.publishApp(appId, req.user.id);
+  }
 }

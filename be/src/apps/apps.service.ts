@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -6,7 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-import { App, AppDocument } from './schemas/app.schema';
+import { App, AppDocument, AppStatus } from './schemas/app.schema';
 import { CreateAppDto } from './dto/create-app.dto';
 import { UpdateAppDto } from './dto/update-app.dto';
 
@@ -227,5 +228,22 @@ export class AppsService {
     }
 
     return app;
+  }
+
+  async publishApp(appId: string, userId: string) {
+    const app = await this.findDocumentByIdAndOwner(appId, userId);
+
+    if (app.status !== AppStatus.PURCHASED) {
+      throw new BadRequestException('Only purchased apps can be published');
+    }
+
+    app.status = AppStatus.PUBLISHED;
+
+    await app.save();
+
+    return {
+      success: true,
+      message: 'App published successfully',
+    };
   }
 }

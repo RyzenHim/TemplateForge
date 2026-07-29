@@ -12,12 +12,19 @@ const variants = {
     "inline-flex items-center gap-1 text-sm font-medium text-red-600 transition-colors hover:text-red-500 active:text-red-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-400 dark:hover:text-red-300 dark:active:text-red-500 focus-visible:ring-red-500/40",
 };
 
+const sizes = {
+  sm: "px-3 py-1.5 text-sm",
+  md: "px-4 py-2 text-base",
+};
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "delete";
+  size?: "sm" | "md";
 }
 
 export default function Button({
   variant = "primary",
+  size = "md",
   className,
   children,
   ...props
@@ -27,8 +34,7 @@ export default function Button({
   return (
     <button
       className={`
-        ${isDelete ? "" : "rounded-lg px-4 py-2 active:scale-[0.97]"}
-        font-medium
+        ${isDelete ? "" : `rounded-lg font-medium active:scale-[0.97] ${sizes[size]}`}
         cursor-pointer
         transition-all
         duration-200
@@ -40,7 +46,7 @@ export default function Button({
         disabled:hover:shadow-none
         disabled:active:scale-100
         ${variants[variant]}
-        ${className}
+        ${className ?? ""}
       `}
       {...props}
     >

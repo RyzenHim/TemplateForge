@@ -61,7 +61,7 @@ export interface App {
   icon: string;
   thumbnail?: string;
   platform: "Android" | "iOS" | "Android & iOS";
-  status: "draft" | "published" | "archived";
+  status: "draft" | "purchased" | "published" | "archived";
   owner: string;
   sourceTemplate: string | null;
   templateName?: string;
@@ -96,4 +96,9 @@ export type UpdateAppRequest = Partial<CreateAppRequest>;
 export interface CreateAppResponse {
   message: string;
   app: App;
+}
+
+export interface PublishAppResponse {
+  success: boolean;
+  message: string;
 }

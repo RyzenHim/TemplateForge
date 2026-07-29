@@ -3,6 +3,7 @@ import type {
   App,
   CreateAppRequest,
   CreateAppResponse,
+  PublishAppResponse,
   UpdateAppRequest,
 } from "../types/app.types";
 
@@ -37,3 +38,11 @@ export async function deleteApp(id: string): Promise<{ message: string }> {
 
   return response.data;
 }
+
+export const publishApp = async (
+  appId: string,
+): Promise<PublishAppResponse> => {
+  const response = await api.patch(`/apps/${appId}/publish`);
+
+  return response.data;
+};

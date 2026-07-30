@@ -38,6 +38,7 @@ import { useCreateTemplate } from "@/app/lib/hooks/template/useCreateTemplate";
 import { usePublicTemplates } from "@/app/lib/hooks/template/usePublicTemplates";
 import { useTemplates } from "@/app/lib/hooks/template/useTemplates";
 import { useAddons } from "@/app/lib/hooks/addons/useAddons";
+import { usePlatformPrices } from "@/app/lib/hooks/platform-price/usePlatformPrices";
 import type { Template } from "@/app/lib/types/template.types";
 import type { Addon } from "@/app/lib/types/addons/addons.types";
 import type { AppAddon } from "@/app/lib/types/app.types";
@@ -244,6 +245,7 @@ export default function AppForm({ mode }: AppFormProps) {
   const { data: publicTemplates = [], isLoading: isLoadingPublic } =
     usePublicTemplates();
   const { data: addons = [] } = useAddons();
+  const { data: platformPrices = [] } = usePlatformPrices();
 
   const isPending = isCreating || isUpdating;
 
@@ -398,6 +400,8 @@ export default function AppForm({ mode }: AppFormProps) {
           icon: a.icon,
           category: a.category,
           platform: a.platform as any,
+          pricingType: a.pricingType,
+          price: a.price,
           createdAt: "",
           updatedAt: "",
         })),
@@ -422,6 +426,13 @@ export default function AppForm({ mode }: AppFormProps) {
   const selectedPermissions = Object.values(values.appPermissions ?? {}).filter(
     Boolean,
   ).length;
+  const platformPrice =
+    platformPrices.find((p) => p.platform === values.platform)?.price ?? null;
+  const addonTotal = selectedAddons.reduce(
+    (sum, a) => sum + (a.pricingType === "paid" ? a.price : 0),
+    0,
+  );
+  const totalPrice = platformPrice !== null ? platformPrice + addonTotal : null;
   const availableAddons = addons.filter((addon) =>
     addonMatchesPlatform(addon.platform, values.platform ?? ""),
   );
@@ -548,6 +559,8 @@ export default function AppForm({ mode }: AppFormProps) {
           icon: a.icon,
           category: a.category,
           platform: a.platform,
+          pricingType: a.pricingType,
+          price: a.price,
         })),
       ),
     );
@@ -977,12 +990,28 @@ export default function AppForm({ mode }: AppFormProps) {
                       }}
                     >
                       <option value="">Select a platform</option>
-                      {PLATFORMS.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
+                      {PLATFORMS.map((p) => {
+                        const price = platformPrices.find(
+                          (item) => item.platform === p,
+                        )?.price;
+                        return (
+                          <option
+                            key={p}
+                            value={p}
+                            disabled={price === null || price === undefined}
+                          >
+                            {p}
+                            {price === null || price === undefined
+                              ? " — price not set"
+                              : ` — ₹${(price / 100).toLocaleString("en-IN")}`}
+                          </option>
+                        );
+                      })}
                     </select>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Platform prices are managed in Platform Pricing and are
+                      saved as a price snapshot with this app.
+                    </p>
                   </Field>
                   <Field
                     label="Version"
@@ -1438,7 +1467,10 @@ export default function AppForm({ mode }: AppFormProps) {
                                 {addon.name}
                               </p>
                               <p className="text-xs text-zinc-500">
-                                {addon.platform} · {addon.category}
+                                {addon.platform} · {addon.category} ·{" "}
+                                {addon.pricingType === "paid"
+                                  ? `₹${(addon.price / 100).toLocaleString("en-IN")}`
+                                  : "Free"}
                               </p>
                             </div>
                           </div>
@@ -1505,7 +1537,10 @@ export default function AppForm({ mode }: AppFormProps) {
                                     {addon.name}
                                   </p>
                                   <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                                    {addon.platform} · {addon.category}
+                                    {addon.platform} · {addon.category} ·{" "}
+                                    {addon.pricingType === "paid"
+                                      ? `₹${(addon.price / 100).toLocaleString("en-IN")}`
+                                      : "Free"}
                                   </p>
                                   {addon.description && (
                                     <p className="mt-1 text-xs text-zinc-400 line-clamp-1">
@@ -1621,6 +1656,36 @@ export default function AppForm({ mode }: AppFormProps) {
                       label="Add-ons"
                       value={`${selectedAddons.length} selected`}
                     />
+
+                    {values.platform && (
+                      <>
+                        <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                            Pricing
+                          </p>
+                        </div>
+                        <PreviewItem
+                          label="Platform"
+                          value={
+                            platformPrice !== null
+                              ? `₹${(platformPrice / 100).toLocaleString("en-IN")}`
+                              : "Price not set"
+                          }
+                        />
+                        {addonTotal > 0 && (
+                          <PreviewItem
+                            label="Add-ons"
+                            value={`₹${(addonTotal / 100).toLocaleString("en-IN")}`}
+                          />
+                        )}
+                        {totalPrice !== null && (
+                          <PreviewItem
+                            label="Total"
+                            value={`₹${(totalPrice / 100).toLocaleString("en-IN")}`}
+                          />
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

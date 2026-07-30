@@ -89,6 +89,12 @@ export class AddonSnapshot {
 
   @Prop({ required: true })
   platform!: string;
+
+  @Prop({ enum: ['free', 'paid'], default: 'free' })
+  pricingType!: 'free' | 'paid';
+
+  @Prop({ default: 0, min: 0 })
+  price!: number;
 }
 
 @Schema({ _id: false })

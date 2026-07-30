@@ -119,6 +119,16 @@ export class App {
   })
   addons!: AddonSnapshot[];
 
+  // Immutable money amounts, stored in paise. totalPrice only increases after a verified payment.
+  @Prop({ default: 0, min: 0 })
+  basePrice!: number;
+
+  @Prop({ default: 0, min: 0 })
+  totalPrice!: number;
+
+  @Prop({ type: [String], default: [] })
+  paidAddonIds!: string[];
+
   createdAt!: Date;
 
   updatedAt!: Date;

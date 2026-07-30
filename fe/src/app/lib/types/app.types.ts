@@ -49,6 +49,8 @@ export interface AppAddon {
   icon?: string;
   category: string;
   platform: string;
+  pricingType: "free" | "paid";
+  price: number;
 }
 
 export interface App {
@@ -70,6 +72,9 @@ export interface App {
   appPermissions: AppPermissions;
   appSettings: AppSettings;
   addons: AppAddon[];
+  basePrice: number;
+  totalPrice: number;
+  paidAddonIds: string[];
   createdAt: string;
   updatedAt: string;
 }

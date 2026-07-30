@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
@@ -9,6 +9,11 @@ import { VerifyPaymentDto } from './dto/verify-payment.dto';
 @UseGuards(JwtAuthGuard)
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
+
+  @Get()
+  findAll(@Req() req: AuthenticatedRequest) {
+    return this.paymentService.findAll(req.user.id);
+  }
 
   @Post('create-order') async createOrder(
     @Body() dto: CreateOrderDto,

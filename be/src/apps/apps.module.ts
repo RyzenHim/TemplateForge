@@ -7,6 +7,8 @@ import { AppsService } from './apps.service';
 
 import { App, AppSchema } from './schemas/app.schema';
 import { Template, TemplateSchema } from '../templates/schemas/template.schema';
+import { Addon, AddonSchema } from '../addons/schemas/addon.schema';
+import { PlatformPrice, PlatformPriceSchema } from '../platform-prices/schemas/platform-price.schema';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { Template, TemplateSchema } from '../templates/schemas/template.schema';
         name: Template.name,
         schema: TemplateSchema,
       },
+      { name: Addon.name, schema: AddonSchema },
+      { name: PlatformPrice.name, schema: PlatformPriceSchema },
     ]),
     UploadsModule,
   ],

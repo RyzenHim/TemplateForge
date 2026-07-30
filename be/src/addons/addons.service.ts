@@ -24,6 +24,8 @@ export class AddonsService {
       icon: addon.icon,
       category: addon.category,
       platform: addon.platform,
+      pricingType: addon.pricingType,
+      price: addon.price,
       owner: addon.owner?.toString() || '',
       createdAt: addon.createdAt,
       updatedAt: addon.updatedAt,
@@ -43,6 +45,7 @@ export class AddonsService {
 
     const addon = await this.addonModel.create({
       ...dto,
+      price: dto.pricingType === 'paid' ? dto.price : 0,
       owner: new Types.ObjectId(userId),
     });
 
@@ -87,7 +90,10 @@ export class AddonsService {
         _id: id,
         owner: new Types.ObjectId(userId),
       },
-      dto,
+      {
+        ...dto,
+        ...(dto.pricingType === 'free' ? { price: 0 } : {}),
+      },
       {
         returnDocument: 'after',
         runValidators: true,

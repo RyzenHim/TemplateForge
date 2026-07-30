@@ -100,6 +100,10 @@ export class Payment {
     default: {},
   })
   metadata!: Record<string, unknown>;
+
+  createdAt!: Date;
+
+  updatedAt!: Date;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

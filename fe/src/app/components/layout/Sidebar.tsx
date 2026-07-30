@@ -5,17 +5,13 @@ import { useRouter, usePathname } from "next/navigation";
 
 import UserMenuDropDown from "./UserMenuDropDown";
 import { ArrowLeft } from "lucide-react";
-import {
-  app_sideBar_options,
-  general_sideBar_options,
-  templates_sideBar_options,
-} from "@/app/lib/navigation/navigations";
+import { general_sideBar_options } from "@/app/lib/navigation/navigations";
 
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  let menuOptions = general_sideBar_options;
+  const menuOptions = general_sideBar_options;
 
   // if (pathname.startsWith("/dashboard/apps/")) {
   //   menuOptions = app_sideBar_options;
@@ -27,7 +23,7 @@ export default function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex h-screen w-72 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 text-white shadow-xl">
       <div className="flex flex-col gap-3 p-4">
-        {pathname.startsWith("/dashboard/home") ? null : (
+        {pathname === "/dashboard" ? null : (
           <>
             <button
               onClick={() => router.back()}
@@ -38,7 +34,7 @@ export default function Sidebar() {
             </button>
 
             <button
-              onClick={() => router.push("/dashboard/home")}
+              onClick={() => router.push("/dashboard")}
               className="flex w-full items-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm font-medium text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-800"
             >
               <ArrowLeft size={16} />
@@ -50,7 +46,7 @@ export default function Sidebar() {
 
       <div className="border-y border-zinc-800 px-6 py-6">
         <button
-          onClick={() => router.push("/dashboard/home")}
+          onClick={() => router.push("/dashboard")}
           className="text-left text-2xl font-extrabold tracking-tight text-white transition hover:text-indigo-300"
         >
           TemplateForge

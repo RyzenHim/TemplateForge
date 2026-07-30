@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 
 import Card from "@/app/components/ui/Card";
+import Modal from "@/app/components/ui/Modal";
 import type { App } from "@/app/lib/types/app.types";
 
 import { useDeleteApp } from "@/app/lib/hooks/app/useDeleteApp";
@@ -42,14 +42,22 @@ function formatUpdatedAt(value: string) {
       day: "numeric",
       year: "numeric",
     });
-  } catch (e) {
+  } catch {
     return value;
   }
 }
 
+const formatPrice = (amount: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount / 100);
+
 export default function AppCard({ app }: AppCardProps) {
-  const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [isOpeningCheckout, setIsOpeningCheckout] = useState(false);
   const { mutateAsync: createOrder } = useCreateOrder();
   const queryClient = useQueryClient();
 
@@ -58,8 +66,10 @@ export default function AppCard({ app }: AppCardProps) {
   const { mutateAsync: publishApp } = usePublishApp();
 
   const handlePurchase = async () => {
+    setIsOpeningCheckout(true);
     try {
       const order = await createOrder({ appId: app.id });
+      setIsPurchaseModalOpen(false);
       openRazorpayCheckout({
         order,
         onSuccess: async (response) => {
@@ -86,6 +96,8 @@ export default function AppCard({ app }: AppCardProps) {
     } catch (error) {
       console.error(error);
       alert("Unable to create payment");
+    } finally {
+      setIsOpeningCheckout(false);
     }
   };
   const handlePublish = async () => {
@@ -98,6 +110,19 @@ export default function AppCard({ app }: AppCardProps) {
 
   const statusKey = (app.status || "draft").toLowerCase();
   const statusClass = STATUS_STYLES[statusKey] ?? STATUS_STYLES.draft;
+  const paidAddonIds = new Set(app.paidAddonIds || []);
+  const chargeableAddons = app.addons.filter(
+    (addon) =>
+      addon.pricingType === "paid" &&
+      addon.price > 0 &&
+      (app.status === "draft" || !paidAddonIds.has(addon.addonId)),
+  );
+  const addonTotal = chargeableAddons.reduce(
+    (total, addon) => total + addon.price,
+    0,
+  );
+  const platformTotal = app.status === "draft" ? app.basePrice : 0;
+  const purchaseTotal = platformTotal + addonTotal;
 
   return (
     <Card className="group relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/10">
@@ -201,7 +226,7 @@ export default function AppCard({ app }: AppCardProps) {
           </Button>
 
           {app.status === "draft" && (
-            <Button size="sm" onClick={handlePurchase}>
+            <Button size="sm" onClick={() => setIsPurchaseModalOpen(true)}>
               Purchase
             </Button>
           )}
@@ -238,6 +263,26 @@ export default function AppCard({ app }: AppCardProps) {
           </div>
         </div>
       </div>
+      <Modal
+        open={isPurchaseModalOpen}
+        onClose={() => !isOpeningCheckout && setIsPurchaseModalOpen(false)}
+        title="Review your purchase"
+        description="Confirm the saved platform price and selected paid add-ons before payment."
+        width="md"
+        closeOnOverlayClick={!isOpeningCheckout}
+      >
+        <div className="space-y-4 p-6">
+          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3 text-sm dark:border-zinc-800">
+              <div><p className="font-medium text-zinc-900 dark:text-white">{app.platform} app license</p><p className="mt-0.5 text-xs text-zinc-500">Saved platform price</p></div>
+              <span className="font-semibold text-zinc-900 dark:text-white">{formatPrice(platformTotal)}</span>
+            </div>
+            {chargeableAddons.length ? chargeableAddons.map((addon) => <div key={addon.addonId} className="flex items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3 text-sm last:border-0 dark:border-zinc-800"><div><p className="font-medium text-zinc-800 dark:text-zinc-200">{addon.name}</p><p className="mt-0.5 text-xs text-zinc-500">Paid add-on</p></div><span className="font-medium text-zinc-900 dark:text-white">{formatPrice(addon.price)}</span></div>) : <p className="px-4 py-3 text-sm text-zinc-500">No paid add-ons selected.</p>}
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-indigo-50 px-4 py-3 dark:bg-indigo-500/10"><span className="font-semibold text-indigo-950 dark:text-indigo-100">Total payable</span><span className="text-lg font-bold text-indigo-700 dark:text-indigo-300">{formatPrice(purchaseTotal)}</span></div>
+          <div className="flex justify-end gap-3"><Button type="button" variant="secondary" onClick={() => setIsPurchaseModalOpen(false)} disabled={isOpeningCheckout}>Cancel</Button><Button type="button" onClick={handlePurchase} disabled={isOpeningCheckout || purchaseTotal <= 0}>{isOpeningCheckout ? "Opening payment..." : "Continue to payment"}</Button></div>
+        </div>
+      </Modal>
     </Card>
   );
 }

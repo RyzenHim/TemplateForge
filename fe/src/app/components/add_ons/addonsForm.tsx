@@ -47,6 +47,7 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateAddonsRequest>({
     defaultValues: {
@@ -55,6 +56,8 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
       description: "",
       category: "",
       icon: "",
+      pricingType: "free",
+      price: 0,
     },
   });
 
@@ -68,6 +71,8 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
       description: addonData.description ?? "",
       category: addonData.category ?? "",
       icon: addonData.icon ?? "",
+      pricingType: addonData.pricingType ?? "free",
+      price: (addonData.price ?? 0) / 100,
       // thumbnail: app.thumbnail || "",
     });
   }, [mode, addonData, reset]);
@@ -84,6 +89,11 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
       if (data.description) formData.append("description", data.description);
       formData.append("category", data.category);
       if (data.icon) formData.append("icon", data.icon);
+      formData.append("pricingType", data.pricingType);
+      formData.append(
+        "price",
+        String(data.pricingType === "paid" ? Math.round(data.price * 100) : 0),
+      );
 
       if (selectedIcon) {
         formData.append("icon", selectedIcon);
@@ -112,6 +122,7 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
 
   const eyebrow = mode === "edit" ? "Edit add-on" : "Add-on editor";
   const submitLabel = mode === "edit" ? "Save changes" : "Create Add-on";
+  const pricingType = watch("pricingType");
 
   // Show a loader while fetching existing addon data in edit mode
   if (mode === "edit" && isAddonLoading) {
@@ -253,6 +264,16 @@ export default function AddonsForm({ mode, addonId }: AddonsFormProps) {
                     {errors.category.message}
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Pricing <span className="text-red-500">*</span></label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(["free", "paid"] as const).map((option) => (
+                    <label key={option} className="cursor-pointer rounded-lg border border-zinc-300 px-4 py-3 text-sm font-medium capitalize text-zinc-700 has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 has-[:checked]:text-purple-700 dark:border-zinc-700 dark:text-zinc-200 dark:has-[:checked]:bg-purple-500/10 dark:has-[:checked]:text-purple-300"><input type="radio" value={option} className="sr-only" {...register("pricingType")} />{option}</label>
+                  ))}
+                </div>
+                {pricingType === "paid" ? <div className="mt-3"><label className="mb-2 block text-sm font-medium text-zinc-800 dark:text-zinc-200">Price (INR) <span className="text-red-500">*</span></label><input type="number" min="0.01" step="0.01" {...register("price", { valueAsNumber: true, validate: (value) => pricingType !== "paid" || value > 0 || "Enter a price greater than ₹0" })} className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white" placeholder="99.00" />{errors.price ? <p className="mt-1 text-sm text-red-500">{errors.price.message}</p> : null}</div> : <p className="mt-2 text-xs text-zinc-500">Free add-ons do not add to an app purchase total.</p>}
               </div>
 
               {/* Icon */}

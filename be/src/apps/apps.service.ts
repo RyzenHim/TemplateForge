@@ -8,6 +8,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { App, AppDocument, AppStatus } from './schemas/app.schema';
+import { Addon, AddonDocument } from '../addons/schemas/addon.schema';
+import { PlatformPrice, PlatformPriceDocument } from '../platform-prices/schemas/platform-price.schema';
 import { CreateAppDto } from './dto/create-app.dto';
 import { UpdateAppDto } from './dto/update-app.dto';
 
@@ -18,6 +20,10 @@ export class AppsService {
   constructor(
     @InjectModel(App.name)
     private readonly appModel: Model<AppDocument>,
+    @InjectModel(Addon.name)
+    private readonly addonModel: Model<AddonDocument>,
+    @InjectModel(PlatformPrice.name)
+    private readonly platformPriceModel: Model<PlatformPriceDocument>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -43,9 +49,53 @@ export class AppsService {
       appPermissions: app.appPermissions,
       appSettings: app.appSettings,
       addons: app.addons || [],
+      basePrice: app.basePrice || 0,
+      totalPrice: app.totalPrice || 0,
+      paidAddonIds: app.paidAddonIds || [],
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
     };
+  }
+
+  private async getBasePrice(
+    platform: 'Android' | 'iOS' | 'Android & iOS',
+    userId: string,
+  ): Promise<number> {
+    const price = await this.platformPriceModel.findOne({
+      owner: new Types.ObjectId(userId),
+      platform,
+    });
+    if (!price) {
+      throw new BadRequestException(
+        `Set a price for ${platform} in Platform Pricing before creating an app`,
+      );
+    }
+    return price.price;
+  }
+
+  private async createAddonSnapshots(addons: { addonId: string }[] = []) {
+    const uniqueIds = [...new Set(addons.map((addon) => addon.addonId))];
+    if (!uniqueIds.length) return [];
+
+    const records = await this.addonModel.find({ _id: { $in: uniqueIds } });
+    if (records.length !== uniqueIds.length) {
+      throw new BadRequestException('One or more selected add-ons no longer exist');
+    }
+
+    const byId = new Map(records.map((addon) => [addon._id.toString(), addon]));
+    return uniqueIds.map((id) => {
+      const addon = byId.get(id)!;
+      return {
+        addonId: addon._id,
+        name: addon.name,
+        description: addon.description,
+        icon: addon.icon,
+        category: addon.category,
+        platform: addon.platform,
+        pricingType: addon.pricingType,
+        price: addon.price,
+      };
+    });
   }
 
   async create(
@@ -58,6 +108,7 @@ export class AppsService {
     },
   ) {
     const { templateId, ...appData } = createAppDto;
+    const addonSnapshots = await this.createAddonSnapshots(appData.addons);
 
     if (files?.icon?.[0]) {
       const result = await this.cloudinaryService.uploadImage(files.icon[0]);
@@ -91,7 +142,13 @@ export class AppsService {
     let app: AppDocument;
     try {
       app = await this.appModel.create({
-        ...appData,
+      ...appData,
+      addons: addonSnapshots,
+      basePrice: await this.getBasePrice(
+        appData.platform as 'Android' | 'iOS' | 'Android & iOS',
+        userId,
+      ),
+      totalPrice: 0,
         owner: new Types.ObjectId(userId),
         sourceTemplate: templateId ? new Types.ObjectId(templateId) : null,
       });
@@ -142,6 +199,10 @@ export class AppsService {
   ) {
     const dto: any = { ...updateAppDto };
 
+    if (dto.addons) {
+      dto.addons = await this.createAddonSnapshots(dto.addons);
+    }
+
     if (files?.icon?.[0]) {
       const result = await this.cloudinaryService.uploadImage(files.icon[0]);
       dto.icon = result.secure_url;
@@ -173,6 +234,13 @@ export class AppsService {
 
     let app: AppDocument | null;
     try {
+      const existingApp = await this.findDocumentByIdAndOwner(id, userId);
+      if (dto.platform && existingApp.status === AppStatus.DRAFT) {
+        dto.basePrice = await this.getBasePrice(
+          dto.platform as 'Android' | 'iOS' | 'Android & iOS',
+          userId,
+        );
+      }
       app = await this.appModel
         .findOneAndUpdate(
           {

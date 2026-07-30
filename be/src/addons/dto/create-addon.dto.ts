@@ -1,4 +1,12 @@
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateAddonDto {
   @IsString()
@@ -19,4 +27,12 @@ export class CreateAddonDto {
 
   @IsEnum(['Android', 'iOS', 'Android & iOS'])
   platform!: 'Android' | 'iOS' | 'Android & iOS';
+
+  @IsEnum(['free', 'paid'])
+  pricingType!: 'free' | 'paid';
+
+  @ValidateIf((dto: CreateAddonDto) => dto.pricingType === 'paid')
+  @IsInt()
+  @Min(1)
+  price?: number;
 }

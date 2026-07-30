@@ -21,23 +21,6 @@ import { InjectModel } from '@nestjs/mongoose';
 @Injectable()
 export class PaymentsService {
   private razorpay: Razorpay;
-  //helper function
-  private getBasePrice(platform: string): number {
-    switch (platform) {
-      case 'Android':
-        return 49900;
-
-      case 'iOS':
-        return 79900;
-
-      case 'Android & iOS':
-        return 99900;
-
-      default:
-        throw new BadRequestException('Invalid platform');
-    }
-  }
-
   constructor(
     private readonly configService: ConfigService,
     private readonly appsService: AppsService,
@@ -50,6 +33,54 @@ export class PaymentsService {
     });
   }
 
+  async findAll(userId: string) {
+    const payments = await this.paymentModel
+      .find({ user: userId })
+      .populate('app', 'name platform packageName version status')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return payments.map((payment) => {
+      const app = payment.app as unknown as {
+        _id?: { toString(): string };
+        name?: string;
+        platform?: string;
+        packageName?: string;
+        version?: string;
+        status?: string;
+      } | null;
+
+      return {
+        id: payment._id.toString(),
+        amount: payment.amount,
+        currency: payment.currency,
+        gateway: payment.gateway,
+        status: payment.status,
+        gatewayStatus: payment.gatewayStatus || null,
+        gatewayOrderId: payment.gatewayOrderId,
+        gatewayPaymentId: payment.gatewayPaymentId || null,
+        gatewayReceipt: payment.gatewayReceipt || null,
+        paymentMethod: payment.paymentMethod || null,
+        failureReason: payment.failureReason || null,
+        paidAt: payment.paidAt || null,
+        refundedAt: payment.refundedAt || null,
+        metadata: payment.metadata || {},
+        createdAt: payment.createdAt,
+        updatedAt: payment.updatedAt,
+        app: app?._id
+          ? {
+              id: app._id.toString(),
+              name: app.name || 'Deleted app',
+              platform: app.platform || null,
+              packageName: app.packageName || null,
+              version: app.version || null,
+              status: app.status || null,
+            }
+          : null,
+      };
+    });
+  }
+
   async createOrder(dto: CreateOrderDto, userId: string) {
     // console.log('create order dto', dto);
 
@@ -58,12 +89,27 @@ export class PaymentsService {
       userId,
     );
 
-    console.log('Platform:', app.platform);
-    console.log('Platform JSON:', JSON.stringify(app.platform));
-    if (app.status !== AppStatus.DRAFT) {
-      throw new BadRequestException('Only draft apps can be purchased');
+    if (app.status !== AppStatus.DRAFT && app.status !== AppStatus.PURCHASED) {
+      throw new BadRequestException('Only draft or purchased apps can be paid for');
     }
-    const amount = this.getBasePrice(app.platform);
+
+    const paidAddonIds = new Set(app.paidAddonIds || []);
+    const chargeableAddons = app.addons.filter(
+      (addon) =>
+        addon.pricingType === 'paid' &&
+        addon.price > 0 &&
+        (app.status === AppStatus.DRAFT || !paidAddonIds.has(addon.addonId.toString())),
+    );
+    const addonAmount = chargeableAddons.reduce(
+      (total, addon) => total + addon.price,
+      0,
+    );
+    const baseAmount = app.status === AppStatus.DRAFT ? app.basePrice : 0;
+    const amount = baseAmount + addonAmount;
+
+    if (amount <= 0) {
+      throw new BadRequestException('There are no new paid items to purchase');
+    }
 
     const order = await this.razorpay.orders.create({
       amount,
@@ -82,6 +128,16 @@ export class PaymentsService {
       gatewayReceipt: order.receipt,
       gatewayStatus: order.status,
       status: PaymentStatus.CREATED,
+      metadata: {
+        baseAmount,
+        addonAmount,
+        addonIds: chargeableAddons.map((addon) => addon.addonId.toString()),
+        addonItems: chargeableAddons.map((addon) => ({
+          id: addon.addonId.toString(),
+          name: addon.name,
+          price: addon.price,
+        })),
+      },
     });
     return {
       key: this.configService.get<string>('RAZORPAY_KEY_ID'),
@@ -90,6 +146,15 @@ export class PaymentsService {
       currency: order.currency,
       appName: app.name,
       description: app.description,
+      breakdown: {
+        baseAmount,
+        addonAmount,
+        addonItems: chargeableAddons.map((addon) => ({
+          name: addon.name,
+          price: addon.price,
+        })),
+        totalAmount: amount,
+      },
     };
   }
 
@@ -157,6 +222,13 @@ export class PaymentsService {
 
     await payment.save();
 
+    const metadata = payment.metadata as {
+      addonIds?: string[];
+    };
+    const paidAddonIds = new Set(app.paidAddonIds || []);
+    for (const addonId of metadata.addonIds || []) paidAddonIds.add(addonId);
+    app.paidAddonIds = [...paidAddonIds];
+    app.totalPrice = (app.totalPrice || 0) + payment.amount;
     app.status = AppStatus.PURCHASED;
 
     await app.save();

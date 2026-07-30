@@ -8,6 +8,7 @@ import { TemplatesModule } from '../templates/templates.module';
 import { UploadsModule } from '../uploads/uploads.module';
 import { AddonsModule } from '../addons/addons.module';
 import { PaymentsModule } from 'src/payments/payments.module';
+import { PlatformPricesModule } from '../platform-prices/platform-prices.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -25,6 +26,7 @@ import { PaymentsModule } from 'src/payments/payments.module';
     AddonsModule,
     UserModule,
     PaymentsModule,
+    PlatformPricesModule,
   ],
   controllers: [],
   providers: [],

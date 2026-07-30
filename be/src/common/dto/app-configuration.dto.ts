@@ -2,9 +2,11 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsMongoId,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -87,6 +89,13 @@ export class AddonSnapshotDto {
 
   @IsString()
   platform!: string;
+
+  @IsEnum(['free', 'paid'])
+  pricingType!: 'free' | 'paid';
+
+  @IsInt()
+  @Min(0)
+  price!: number;
 }
 
 // --------------------

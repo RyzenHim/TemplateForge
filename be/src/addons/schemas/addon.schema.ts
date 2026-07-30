@@ -48,6 +48,13 @@ export class Addon {
   })
   platform!: string;
 
+  @Prop({ enum: ['free', 'paid'], default: 'free', required: true })
+  pricingType!: 'free' | 'paid';
+
+  // Stored in the smallest currency unit (paise) to avoid floating-point prices.
+  @Prop({ default: 0, min: 0, required: true })
+  price!: number;
+
   createdAt!: Date;
   updatedAt!: Date;
 }

@@ -7,6 +7,8 @@ export interface Addon {
   icon?: string;
   category: string;
   platform: Platform;
+  pricingType: "free" | "paid";
+  price: number;
   owner?: string;
   createdAt: string;
   updatedAt: string;
@@ -18,6 +20,9 @@ export interface CreateAddonsRequest {
   icon?: string;
   category: string;
   platform: Platform | "";
+  pricingType: "free" | "paid";
+  // Entered as INR in the editor; converted to paise before sending to the API.
+  price: number;
 }
 export interface AddonsFormProps {
   mode: "create" | "edit";

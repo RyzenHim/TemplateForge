@@ -2,6 +2,10 @@ import { NavigationItems } from "../types/sideBarMenus.types";
 
 export const general_sideBar_options: NavigationItems[] = [
   {
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
     label: "My App",
     href: "/dashboard/apps",
   },
@@ -16,6 +20,14 @@ export const general_sideBar_options: NavigationItems[] = [
   {
     label: "Add-ons",
     href: "/dashboard/addons",
+  },
+  {
+    label: "Transactions",
+    href: "/dashboard/transactions",
+  },
+  {
+    label: "Platform Pricing",
+    href: "/dashboard/platform-pricing",
   },
 ];
 export const app_sideBar_options: NavigationItems[] = [

@@ -4,6 +4,7 @@ import {
   CreateOrderResponse,
   VerifyPaymentRequest,
   VerifyPaymentResponse,
+  Transaction,
 } from "../types/payment.types";
 
 export async function createOrder(
@@ -13,6 +14,11 @@ export async function createOrder(
     "/payments/create-order",
     data,
   );
+  return response.data;
+}
+
+export async function getTransactions(): Promise<Transaction[]> {
+  const response = await api.get<Transaction[]>("/payments");
   return response.data;
 }
 

@@ -26,3 +26,5 @@ export const settingToggles = [
     "Remove the overscroll bounce effect.",
   ],
 ] as const;
+
+export const PLATFORMS = ["Android", "iOS", "Android & iOS"] as const;

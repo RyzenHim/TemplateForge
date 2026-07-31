@@ -47,79 +47,17 @@ import {
   showApiError,
   showApiSuccess,
 } from "@/app/lib/utils";
-
+import {
+  permissions,
+  settingToggles,
+  PLATFORMS,
+} from "../../lib/constants/template/constants";
 // ── Schema ────────────────────────────────────────────────────────────────────
-
-const hexColor = z
-  .string()
-  .regex(/^#[0-9A-Fa-f]{6}$/, "Use a 6-digit hex colour, for example #4F46E5");
-
-const appEditorSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "App name must be at least 2 characters")
-    .max(50),
-  description: z
-    .string()
-    .trim()
-    .max(200, "Description cannot exceed 200 characters"),
-  packageName: z
-    .string()
-    .trim()
-    .regex(
-      /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/,
-      "Enter a valid Android package name",
-    ),
-  platform: z
-    .string()
-    .refine((v) => ["Android", "iOS", "Android & iOS"].includes(v), {
-      message: "Platform is required",
-    }),
-  websiteUrl: z.union([z.literal(""), z.url("Enter a valid website URL")]),
-  version: z
-    .string()
-    .trim()
-    .regex(/^$|^\d+\.\d+(\.\d+)?$/, "Use a version such as 1.0.0"),
-  icon: z.union([z.literal(""), z.string().url("Enter a valid icon URL")]),
-  branding: z.object({ primaryColor: hexColor }),
-  splashScreen: z.object({
-    type: z.enum(["animation", "logo", "image"]),
-    animationJson: z.string(),
-    logoImage: z.union([
-      z.literal(""),
-      z.string().url("Enter a valid image URL"),
-    ]),
-    fullImage: z.union([
-      z.literal(""),
-      z.string().url("Enter a valid image URL"),
-    ]),
-    backgroundColor: hexColor,
-    playbackBehaviour: z.enum(["once", "loop"]),
-  }),
-  appPermissions: z.object({
-    camera: z.boolean(),
-    microphone: z.boolean(),
-    location: z.boolean(),
-    storage: z.boolean(),
-    notifications: z.boolean(),
-  }),
-  appSettings: z.object({
-    statusBarColor: hexColor,
-    orientation: z.enum(["portrait", "landscape", "both"]),
-    fullScreen: z.boolean(),
-    systemNavigationBarColor: hexColor,
-    pinchToZoom: z.boolean(),
-    callbackOnResume: z.boolean(),
-    disableCaching: z.boolean(),
-    kioskMode: z.boolean(),
-    disableScrollBounce: z.boolean(),
-  }),
-  thumbnail: z.union([z.literal(""), z.string().url()]),
-});
-
-type AppEditorValues = z.infer<typeof appEditorSchema>;
-
+import {
+  appEditorSchema,
+  AppEditorValues,
+} from "@/app/lib/schemas/apps/schema";
+import { editorDefaults } from "@/app/lib/defaults/apps/defaults";
 type SaveTemplateFormData = {
   name: string;
   description: string;
@@ -130,74 +68,45 @@ type SaveTemplateFormData = {
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
 
-const editorDefaults: AppEditorValues = {
-  name: "",
-  description: "",
-  packageName: "",
-  platform: "",
-  websiteUrl: "",
-  version: "1.0.0",
-  icon: "",
-  branding: { primaryColor: "#4F46E5" },
-  splashScreen: {
-    type: "logo",
-    animationJson: "",
-    logoImage: "",
-    fullImage: "",
-    backgroundColor: "#FFFFFF",
-    playbackBehaviour: "once",
-  },
-  appPermissions: {
-    camera: false,
-    microphone: false,
-    location: false,
-    storage: false,
-    notifications: false,
-  },
-  appSettings: {
-    statusBarColor: "#FFFFFF",
-    orientation: "portrait",
-    fullScreen: false,
-    systemNavigationBarColor: "#FFFFFF",
-    pinchToZoom: true,
-    callbackOnResume: false,
-    disableCaching: false,
-    kioskMode: false,
-    disableScrollBounce: false,
-  },
-  thumbnail: "",
-};
+// const editorDefaults: AppEditorValues = {
+//   name: "",
+//   description: "",
+//   packageName: "",
+//   platform: "",
+//   websiteUrl: "",
+//   version: "1.0.0",
+//   icon: "",
+//   branding: { primaryColor: "#4F46E5" },
+//   splashScreen: {
+//     type: "logo",
+//     animationJson: "",
+//     logoImage: "",
+//     fullImage: "",
+//     backgroundColor: "#FFFFFF",
+//     playbackBehaviour: "once",
+//   },
+//   appPermissions: {
+//     camera: false,
+//     microphone: false,
+//     location: false,
+//     storage: false,
+//     notifications: false,
+//   },
+//   appSettings: {
+//     statusBarColor: "#FFFFFF",
+//     orientation: "portrait",
+//     fullScreen: false,
+//     systemNavigationBarColor: "#FFFFFF",
+//     pinchToZoom: true,
+//     callbackOnResume: false,
+//     disableCaching: false,
+//     kioskMode: false,
+//     disableScrollBounce: false,
+//   },
+//   thumbnail: "",
+// };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const permissions = [
-  ["camera", "Camera", "Allow the app to capture photos and video."],
-  ["microphone", "Microphone", "Allow the app to record audio."],
-  ["location", "Location", "Allow the app to access the device location."],
-  ["storage", "Storage", "Allow access to files and media."],
-  ["notifications", "Notifications", "Allow the app to send notifications."],
-] as const;
-
-const settingToggles = [
-  ["fullScreen", "Enable full screen", "Hide system UI while the app is open."],
-  ["pinchToZoom", "Enable pinch to zoom", "Let users zoom web content."],
-  [
-    "callbackOnResume",
-    "Callback on app resume",
-    "Run the configured callback after returning to the app.",
-  ],
-  ["disableCaching", "Disable caching", "Always load fresh web content."],
-  [
-    "kioskMode",
-    "Enable kiosk mode",
-    "Keep the app focused for managed devices.",
-  ],
-  [
-    "disableScrollBounce",
-    "Disable scroll bounce",
-    "Remove the overscroll bounce effect.",
-  ],
-] as const;
 
 function cloneValue<T>(value: T): T {
   if (typeof structuredClone === "function") return structuredClone(value);
@@ -208,8 +117,6 @@ function cloneValue<T>(value: T): T {
 
 type SplashKey = "logoImage" | "fullImage" | "animationJson";
 type FileKey = "icon" | "thumbnail" | SplashKey;
-
-const PLATFORMS = ["Android", "iOS", "Android & iOS"] as const;
 
 // Which add-ons are available for a given app platform.
 // Android → Android + Android & iOS; iOS → iOS + Android & iOS; Android & iOS → all.

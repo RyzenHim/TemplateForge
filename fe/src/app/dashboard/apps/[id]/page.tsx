@@ -18,7 +18,10 @@ import Card from "@/app/components/ui/Card";
 import Loader from "@/app/components/ui/Loader";
 
 import { useApp } from "@/app/lib/hooks/app/useApp";
-
+import {
+  permissionsList,
+  settingsList,
+} from "@/app/lib/constants/apps/apps.constants";
 export default function AppDetailsPage() {
   const router = useRouter();
   const params = useParams();
@@ -52,55 +55,6 @@ export default function AppDetailsPage() {
       </div>
     );
   }
-
-  const permissionsList = [
-    { key: "camera", name: "Camera", desc: "Allow capturing photos & videos" },
-    { key: "microphone", name: "Microphone", desc: "Allow recording audio" },
-    { key: "location", name: "Location", desc: "Allow accessing GPS location" },
-    {
-      key: "storage",
-      name: "Storage",
-      desc: "Allow reading/writing local files",
-    },
-    {
-      key: "notifications",
-      name: "Notifications",
-      desc: "Allow sending push notifications",
-    },
-  ] as const;
-
-  const settingsList = [
-    {
-      key: "fullScreen",
-      name: "Full Screen Mode",
-      desc: "Hides system status/navigation bars",
-    },
-    {
-      key: "pinchToZoom",
-      name: "Pinch to Zoom",
-      desc: "Allows users to zoom in/out of pages",
-    },
-    {
-      key: "callbackOnResume",
-      name: "Resume Callback",
-      desc: "Executes resume events when app is foregrounded",
-    },
-    {
-      key: "disableCaching",
-      name: "Disable Cache",
-      desc: "Force loads fresh web contents",
-    },
-    {
-      key: "kioskMode",
-      name: "Kiosk Mode",
-      desc: "Locks app in active full-screen focus",
-    },
-    {
-      key: "disableScrollBounce",
-      name: "Disable Scroll Bounce",
-      desc: "Disables overscroll physics bounce",
-    },
-  ] as const;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-6 sm:p-8">
